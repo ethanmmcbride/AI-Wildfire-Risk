@@ -1,7 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import { useMap } from "react-leaflet";
+import L from "leaflet";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+function FitBounds({ fires }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (fires.length === 0) return;
+
+    const bounds = L.latLngBounds(
+      fires.map(f => [f.lat, f.lon])
+    );
+
+    map.fitBounds(bounds, { padding: [50, 50] });
+  }, [fires]);
+
+  return null;
+}
 
 export default function App() {
   const [fires, setFires] = useState([]);
@@ -9,8 +27,8 @@ export default function App() {
   const [err, setErr] = useState("");
 
   const center = useMemo(() => {
-  if (!fires.length) return [33.88, -117.88];
-  return [fires[0].lat, fires[0].lon];
+  if (fires.length === 0) return [33.88, -117.88];
+  return [Number(fires[0].lat), Number(fires[0].lon)];
 }, [fires]);
 
   useEffect(() => {
@@ -22,7 +40,7 @@ export default function App() {
         const res = await fetch(`${API_BASE}/fires`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setFires(data);
+        setFires(data.slice(0, 1000));
       } catch (e) {
         setErr(String(e));
       } finally {
@@ -50,28 +68,32 @@ export default function App() {
 
               <div style={{ flex: 1 }}>
                 <MapContainer center={center} zoom={5} style={{ height: "100%", width: "100%" }}>
+                  <FitBounds fires={fires} />
                   <TileLayer
                   attribution='&copy; OpenStreetMap contributors'
-                  url="https://{s}.tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png"
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
 
                     {fires.map((f, idx) => {
                       const frp = Number(f.frp ?? 0);
                       const radius = Math.min(12, 3 + frp / 10);
+                      
+                      const b = Number(f.brightness ?? 0);
+                      const color = b > 350 ? "red" : b > 320 ? "orange" : "yellow";
 
                       return (
-                        <CircleMarker
-                        key={idx}
-                        center={[f.lat, f.lon]}
-                        radius={radius}
-                        pathOptions={{}}
-                        >
-                           <Popup>
-                  <div style={{ fontSize: 13 }}>
-                    <div><b>Lat/Lon:</b> {f.lat}, {f.lon}</div>
-                    <div><b>Brightness:</b> {f.brightness}</div>
-                    <div><b>FRP:</b> {f.frp}</div>
-                    <div><b>Confidence:</b> {f.confidence}</div>
+                      <CircleMarker
+                        key={idx} 
+                        center={[f.lat, f.lon]} 
+                        radius={radius} 
+                        pathOptions={{ color }}
+                      >
+                        <Popup>
+                          <div style={{ fontSize: 13 }}>
+                          <div><b>Lat/Lon:</b> {f.lat}, {f.lon}</div>
+                          <div><b>Brightness:</b> {f.brightness}</div>
+                          <div><b>FRP:</b> {f.frp}</div>
+                          <div><b>Confidence:</b> {f.confidence}</div>
                   </div>
                 </Popup>
               </CircleMarker>
