@@ -16,6 +16,17 @@ DB_PATH = "wildfire.db"
 @app.get("/fires")
 def get_fires():
     con =duckdb.connect(DB_PATH)
+    con.execute("""
+    CREATE TABLE IF NOT EXISTS fires (
+    latitude DOUBLE,
+    longitude DOUBLE,
+    bright_ti4 DOUBLE,
+    frp DOUBLE,
+    confidence VARCHAR,
+    acq_date DATE,
+    acq_time VARCHAR
+)
+""")
     rows = con.execute("""
         SELECT latitude, longitude, bright_ti4, frp, confidence
         FROM fires
