@@ -1,24 +1,22 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.12-slim
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y gcc
+# SILENCE WARNINGS: Set these environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_ROOT_USER_ACTION=ignore
+
+# Install build-essential (quietly)
+RUN apt-get update && apt-get install -y -q build-essential
 
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the source code into the container
+# Copy source code
 COPY src/ ./src
-
-# Set python path so it finds your modules
 ENV PYTHONPATH=/app/src
 
-# Expose the port
 EXPOSE 8000
 
-# Command to run the application
-CMD ["uvicorn", "ai_wildfire_tracker.api.server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "ai_wildfire_tracker.api.server:app", "--host", "0.0.0.0", "--port", "8000"]
