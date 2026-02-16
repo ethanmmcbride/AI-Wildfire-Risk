@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+
+# Frontend (built separately)
+frontend/node_modules/
+frontend/dist/
+
+# Data & secrets
+.env
+*.db
+data/
+
+# IDE & OS
+.git/
+.vscode/
+.idea/
+.DS_Store
