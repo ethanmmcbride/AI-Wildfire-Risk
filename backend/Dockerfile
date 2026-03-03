@@ -1,15 +1,16 @@
+# ── Backend (FastAPI + DuckDB) ───────────────────────────────────────────────
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# SILENCE WARNINGS: Set these environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_ROOT_USER_ACTION=ignore
 
-# Install build-essential (quietly)
-RUN apt-get update && apt-get install -y -q build-essential
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install dependencies (layer cached separately from source)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
