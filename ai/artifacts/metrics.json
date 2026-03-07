@@ -1,0 +1,32 @@
+{
+  "metrics": {
+    "report": {
+      "0": {
+        "precision": 0.99,
+        "recall": 1.0,
+        "f1-score": 0.9949748743718593,
+        "support": 99.0
+      },
+      "1": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 1.0
+      },
+      "accuracy": 0.99,
+      "macro avg": {
+        "precision": 0.495,
+        "recall": 0.5,
+        "f1-score": 0.49748743718592964,
+        "support": 100.0
+      },
+      "weighted avg": {
+        "precision": 0.9801000000000001,
+        "recall": 0.99,
+        "f1-score": 0.9850251256281406,
+        "support": 100.0
+      }
+    },
+    "auc": 1.0
+  }
+}

@@ -1,0 +1,8 @@
+pandas
+duckdb
+scikit-learn
+joblib
+pydantic
+pytest
+click
+python-dotenv
