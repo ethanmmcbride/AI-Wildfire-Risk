@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timezone
 
@@ -12,6 +13,7 @@ NOAA_HMS_CSV_URL = os.getenv("NOAA_HMS_CSV_URL")
 DB_PATH = os.getenv("DB_PATH", "wildfire.db")
 NOAA_HMS_CONFIDENCE_DEFAULT = os.getenv("NOAA_HMS_CONFIDENCE_DEFAULT", "medium")
 
+logger = logging.getLogger(__name__)
 
 def _find_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
     lowered = {c.lower(): c for c in df.columns}
@@ -74,17 +76,21 @@ def ingest_noaa_hms() -> None:
     if not NOAA_HMS_CSV_URL:
         raise RuntimeError("Missing NOAA_HMS_CSV_URL in environment")
 
-    print("Fetching NOAA HMS data...")
+    logger.info("Fetching NOAA HMS data...")
     source_df = pd.read_csv(NOAA_HMS_CSV_URL)
     normalized = _normalize_noaa_hms(source_df)
 
     con = duckdb.connect(DB_PATH)
-    ensure_fires_table(con)
-    con.execute("INSERT INTO fires SELECT * FROM normalized")
-    con.close()
-
-    print(f"Inserted {len(normalized)} NOAA HMS records into {DB_PATH}")
-
+    try:
+        ensure_fires_table(con)
+        con.execute("INSERT INTO fires SELECT * FROM normalized")
+        logger.info("Inserted %d NOAA HMS records into %s", len(normalized), DB_PATH)
+    finally:
+        con.close()
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=os.getenv("LOG_LEVEL", "INFO"),
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    )
     ingest_noaa_hms()
