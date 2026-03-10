@@ -1,35 +1,80 @@
-# .github/workflows/ci.yml
 name: CI Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/ci.yml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/ci.yml'
+
   test-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python 3.12
-        uses: actions/setup-python@v4
-        with: { python-version: '3.12' }
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Install Dependencies
         run: |
           pip install -r backend/requirements.txt
+          pip install ruff pytest httpx
+      - name: Lint Backend (Ruff)
+        run: ruff check backend/src backend/tests
+      - name: Check Backend Format (Ruff)
+        run: ruff format --check backend/src backend/tests
+      - name: Run NOAA ingestion tests
+        env:
+          PYTHONPATH: backend/src
+        run: pytest backend/tests/test_ingest_noaa_hms.py -v
       - name: Run Backend Tests
         env:
           PYTHONPATH: backend/src
-        run: |
-          pytest backend/tests
+        run: pytest backend/tests -v
 
   test-frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Node
-        uses: actions/setup-node@v3
-        with: { node-version: '20' }
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
       - name: Install Dependencies
         run: npm install
       - name: Run Frontend Tests

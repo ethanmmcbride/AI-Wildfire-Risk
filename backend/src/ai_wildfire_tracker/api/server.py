@@ -1,8 +1,9 @@
 import logging
+import os
+
+import duckdb
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-import duckdb
-import os
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -22,14 +23,17 @@ app.add_middleware(
 # MODIFIED: Allow env var override for testing
 DB_PATH = os.getenv("TEST_DB_PATH", os.getenv("DB_PATH", "wildfire.db"))
 
+
 def compute_risk(brightness: float | None, frp: float | None) -> float:
     b = float(brightness or 0.0)
     f = float(frp or 0.0)
     return round((b * 0.6) + (f * 0.4), 2)
 
+
 @app.get("/")
 def root():
     return {"message": "AI Wildfire Tracker API is running"}
+
 
 @app.get("/health")
 def health():
@@ -40,6 +44,7 @@ def health():
         "database_exists": db_exists,
         "db_path": DB_PATH,
     }
+
 
 @app.get("/fires")
 def get_fires(
