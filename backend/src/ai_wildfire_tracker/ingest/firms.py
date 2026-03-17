@@ -1,3 +1,4 @@
+import logging
 import os
 
 import duckdb
@@ -7,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 DB_PATH = os.getenv("DB_PATH", "wildfire.db")
 
+logger = logging.getLogger(__name__)
 
 def ensure_fires_table(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(
@@ -33,7 +35,8 @@ def ingest_firms() -> None:
     firms_url = (
         f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{api_key}/VIIRS_SNPP_NRT/world/1"
     )
-    print("Fetching NASA FIRMS data...")
+
+    logger.info("Fetching NASA FIRMS data...")
     df = pd.read_csv(firms_url)
 
     df = df[
@@ -51,13 +54,16 @@ def ingest_firms() -> None:
 
     con = duckdb.connect(DB_PATH)
 
-    ensure_fires_table(con)
-
-    con.execute("INSERT INTO fires SELECT * FROM df")
-    con.close()
-
-    print(f"Inserted {len(df)} fire records into {DB_PATH}")
-
+    try:
+        ensure_fires_table(con)
+        con.execute("INSERT INTO fires SELECT * FROM df")
+        logger.info("Inserted %d fire records into %s", len(df), DB_PATH)
+    finally:
+        con.close()
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=os.getenv("LOG_LEVEL", "INFO"),
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    )
     ingest_firms()
