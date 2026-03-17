@@ -5,18 +5,40 @@ import L from "leaflet";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+const US_BOUNDS = L.latLngBounds([[24, -125], [50, -66]]);
+const US_CENTER = [39.8283, -98.5795];
+
 function FitBounds({ fires }) {
   const map = useMap();
 
   useEffect(() => {
-    if (fires.length === 0) return;
+    if (fires.length === 0) {
+      map.setView(US_CENTER, 5);
+      return;
+    }
 
     const bounds = L.latLngBounds(
-      fires.map(f => [f.lat, f.lon])
+      fires
+        .map(f => [Number(f.lat), Number(f.lon)])
+        .filter(coord => Number.isFinite(coord[0]) && Number.isFinite(coord[1]))
     );
 
-    map.fitBounds(bounds, { padding: [50, 50] });
-  }, [fires]);
+    if (!bounds.isValid()) {
+      map.setView(US_CENTER, 5);
+      return;
+    }
+
+    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 8 });
+
+    const center = map.getCenter();
+    if (!US_BOUNDS.contains(center)) {
+      map.setView(US_CENTER, Math.max(map.getZoom(), 4));
+    }
+
+    if (map.getZoom() < 4) {
+      map.setZoom(4);
+    }
+  }, [fires, map]);
 
   return null;
 }
@@ -27,9 +49,8 @@ export default function App() {
   const [err, setErr] = useState("");
 
   const center = useMemo(() => {
-  if (fires.length === 0) return [33.88, -117.88];
-  return [Number(fires[0].lat), Number(fires[0].lon)];
-}, [fires]);
+    return [39.8283, -98.5795]; // continental US center
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -67,11 +88,18 @@ export default function App() {
              </header>
 
               <div style={{ flex: 1 }}>
-                <MapContainer center={center} zoom={5} style={{ height: "100%", width: "100%" }}>
+                <MapContainer
+                  center={center}
+                  zoom={5}
+                  minZoom={4}
+                  maxBounds={[[24, -125], [50, -66]]}
+                  maxBoundsViscosity={0.8}
+                  style={{ height: "100%", width: "100%" }}
+                >
                   <FitBounds fires={fires} />
                   <TileLayer
-                  attribution='&copy; OpenStreetMap contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; OpenStreetMap contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
 
                     {fires.map((f, idx) => {
