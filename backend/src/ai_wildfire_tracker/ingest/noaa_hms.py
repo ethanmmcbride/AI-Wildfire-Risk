@@ -12,6 +12,12 @@ load_dotenv()
 NOAA_HMS_CSV_URL = os.getenv("NOAA_HMS_CSV_URL")
 DB_PATH = os.getenv("DB_PATH", "wildfire.db")
 NOAA_HMS_CONFIDENCE_DEFAULT = os.getenv("NOAA_HMS_CONFIDENCE_DEFAULT", "medium")
+US_BOUNDS = {
+    "min_lat": 24.0,
+    "max_lat": 49.5,
+    "min_lon": -125.0,
+    "max_lon": -66.5,
+}
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +29,20 @@ def _find_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
     return None
 
 
+def _normalize_confidence(value: object) -> str:
+    normalized = str(value or NOAA_HMS_CONFIDENCE_DEFAULT).strip().lower()
+    if normalized in {"h", "high"}:
+        return "high"
+    if normalized in {"l", "low"}:
+        return "low"
+    if normalized in {"n", "nominal", "medium", "med"}:
+        return "nominal"
+    return normalized
+
+
 def _normalize_noaa_hms(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.rename(columns=lambda c: str(c).strip())
+
     lat_col = _find_column(df, ["latitude", "lat", "y"])
     lon_col = _find_column(df, ["longitude", "lon", "long", "x"])
     bright_col = _find_column(df, ["bright_ti4", "brightness", "temp", "temperature"])
@@ -32,6 +51,7 @@ def _normalize_noaa_hms(df: pd.DataFrame) -> pd.DataFrame:
     date_col = _find_column(df, ["acq_date", "date", "utc_date"])
     time_col = _find_column(df, ["acq_time", "time", "utc_time"])
     dt_col = _find_column(df, ["acq_datetime", "datetime", "timestamp", "date_time"])
+    yearday_col = _find_column(df, ["yearday", "year_day", "julian_day"])
 
     if not lat_col or not lon_col:
         raise ValueError("NOAA HMS payload must include latitude/longitude columns")
@@ -43,6 +63,14 @@ def _normalize_noaa_hms(df: pd.DataFrame) -> pd.DataFrame:
         df["__acq_time"] = parsed.dt.strftime("%H%M")
         date_col = "__acq_date"
         time_col = "__acq_time"
+
+    if not date_col and yearday_col:
+        parsed_yearday = pd.to_datetime(
+            df[yearday_col].astype(str).str.strip(), format="%Y%j", errors="coerce"
+        )
+        df = df.copy()
+        df["__acq_date"] = parsed_yearday.dt.strftime("%Y-%m-%d")
+        date_col = "__acq_date"
 
     if not date_col:
         raise ValueError("NOAA HMS payload must include acq_date/date or datetime")
@@ -60,11 +88,19 @@ def _normalize_noaa_hms(df: pd.DataFrame) -> pd.DataFrame:
             "frp": pd.to_numeric(df[frp_col], errors="coerce") if frp_col else 0.0,
             "acq_date": df[date_col].astype(str),
             "acq_time": df[time_col].astype(str).str.replace(":", "", regex=False).str.zfill(4),
-            "confidence": df[conf_col].astype(str) if conf_col else NOAA_HMS_CONFIDENCE_DEFAULT,
+            "confidence": (
+                df[conf_col].apply(_normalize_confidence)
+                if conf_col
+                else _normalize_confidence(NOAA_HMS_CONFIDENCE_DEFAULT)
+            ),
         }
     )
 
     normalized = normalized.dropna(subset=["latitude", "longitude"])
+    normalized = normalized[
+        normalized["latitude"].between(US_BOUNDS["min_lat"], US_BOUNDS["max_lat"])
+        & normalized["longitude"].between(US_BOUNDS["min_lon"], US_BOUNDS["max_lon"])
+    ]
     normalized["acq_date"] = normalized["acq_date"].replace(
         {"NaT": datetime.now(timezone.utc).strftime("%Y-%m-%d")}
     )

@@ -34,6 +34,10 @@ def setup_teardown_db():
         INSERT INTO fires VALUES 
         (34.0, -118.0, 350.5, 300.0, 50.0, '2024-01-01', '1200', 'high')
     """)
+    con.execute("""
+        INSERT INTO fires VALUES
+        (10.0, -70.0, 280.0, 250.0, 5.0, '2024-01-01', '1300', 'low')
+    """)
     con.close()
     
     yield  # Run the test

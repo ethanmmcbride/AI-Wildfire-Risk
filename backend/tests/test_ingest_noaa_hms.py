@@ -39,12 +39,12 @@ def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
     db_path = tmp_path / "noaa.db"
     sample = pd.DataFrame(
         {
-            "lat": [36.0, None],
-            "lon": [-120.0, -121.0],
-            "temperature": [310.0, 299.0],
-            "frp": [9.5, 3.0],
-            "acq_date": ["2024-02-01", "2024-02-01"],
-            "acq_time": ["0915", "0930"],
+            "lat": [36.0, None, 48.5],
+            "lon": [-120.0, -121.0, -10.0],
+            "temperature": [310.0, 299.0, 330.0],
+            "frp": [9.5, 3.0, 22.0],
+            "acq_date": ["2024-02-01", "2024-02-01", "2024-02-01"],
+            "acq_time": ["0915", "0930", "1015"],
         }
     )
 
@@ -70,7 +70,7 @@ def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
     assert rows[0][3] == 9.5
     assert rows[0][4] == "2024-02-01"
     assert rows[0][5] == "0915"
-    assert rows[0][6] == noaa_hms.NOAA_HMS_CONFIDENCE_DEFAULT
+    assert rows[0][6] == "nominal"
 
 
 def test_ingest_noaa_hms_requires_url(monkeypatch):
