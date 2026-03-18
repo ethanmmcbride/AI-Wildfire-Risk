@@ -7,6 +7,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DB_PATH = os.getenv("DB_PATH", "wildfire.db")
+US_BOUNDS = {
+    "min_lat": 24.0,
+    "max_lat": 49.5,
+    "min_lon": -125.0,
+    "max_lon": -66.5,
+}
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +56,10 @@ def ingest_firms() -> None:
             "acq_time",
             "confidence",
         ]
+    ]
+    df = df[
+        (df["latitude"].between(US_BOUNDS["min_lat"], US_BOUNDS["max_lat"]))
+        & (df["longitude"].between(US_BOUNDS["min_lon"], US_BOUNDS["max_lon"]))
     ]
 
     con = duckdb.connect(DB_PATH)

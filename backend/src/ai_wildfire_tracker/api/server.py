@@ -21,6 +21,18 @@ app.add_middleware(
 
 # MODIFIED: Allow env var override for testing
 DB_PATH = os.getenv("TEST_DB_PATH", os.getenv("DB_PATH", "wildfire.db"))
+US_BOUNDS = {
+    "min_lat": 24.0,
+    "max_lat": 49.5,
+    "min_lon": -125.0,
+    "max_lon": -66.5,
+}
+CA_BOUNDS = {
+    "min_lat": 32.5,
+    "max_lat": 42.1,
+    "min_lon": -124.5,
+    "max_lon": -114.0,
+}
 
 def compute_risk(brightness: float | None, frp: float | None) -> float:
     b = float(brightness or 0.0)
@@ -44,8 +56,9 @@ def health():
 @app.get("/fires")
 def get_fires(
     confidence: str | None = Query(default=None, description="Filter by confidence"),
+    region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
 ):
-    logger.info("GET /fires requested with confidence=%s", confidence)
+    logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
     if not os.path.exists(DB_PATH):
         logger.warning("Database file does not exist: %s", DB_PATH)
@@ -57,11 +70,42 @@ def get_fires(
             SELECT latitude, longitude, bright_ti4, frp, confidence
             FROM fires
         """
-        params: list[str] = []
+        params: list[object] = []
+        where_clauses: list[str] = [
+            "latitude BETWEEN ? AND ?",
+            "longitude BETWEEN ? AND ?",
+        ]
+        params.extend(
+            [
+                US_BOUNDS["min_lat"],
+                US_BOUNDS["max_lat"],
+                US_BOUNDS["min_lon"],
+                US_BOUNDS["max_lon"],
+            ]
+        )
 
         if confidence:
-            query += " WHERE lower(confidence) = lower(?)"
+            where_clauses.append("lower(confidence) = lower(?)")
             params.append(confidence)
+
+        if region and region.lower() == "ca":
+            where_clauses.extend(
+                [
+                    "latitude BETWEEN ? AND ?",
+                    "longitude BETWEEN ? AND ?",
+                ]
+            )
+            params.extend(
+                [
+                    CA_BOUNDS["min_lat"],
+                    CA_BOUNDS["max_lat"],
+                    CA_BOUNDS["min_lon"],
+                    CA_BOUNDS["max_lon"],
+                ]
+            )
+
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
 
         query += """
             ORDER BY acq_date DESC, acq_time DESC
