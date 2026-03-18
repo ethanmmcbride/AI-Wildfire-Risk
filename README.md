@@ -92,3 +92,25 @@ python main.py --help
 ## Notes
 - Add dependencies to `pyproject.toml` once stack decisions are made.
 - Prefer lightweight MVP choices (DuckDB + FastAPI) unless scaling is required.
+
+## End-to-end testing (Playwright)
+- E2E tests run with a deterministic seeded DuckDB fixture and do not call live FIRMS/NOAA feeds.
+- Test runner starts both backend (`uvicorn`) and frontend (`vite`) automatically.
+
+### Local run
+```bash
+# Backend deps are required for the E2E backend process
+python3 -m pip install -r backend/requirements.txt
+
+# Frontend deps + Playwright
+cd frontend
+npm install
+npx playwright install chromium
+
+# Run Chromium E2E suite
+npm run test:e2e
+```
+
+### CI behavior
+- GitHub Actions runs E2E on every push and pull request in a dedicated `test-e2e` job.
+- The suite is intentionally limited to five behavior-focused scenarios to reduce flake and runtime.
