@@ -193,6 +193,8 @@ export default function App() {
   }, [filteredFires]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function load() {
       try {
         setLoading(true);
@@ -201,17 +203,24 @@ export default function App() {
         const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
         const url = new URL(`${apiBase}/fires`, window.location.origin);
         if (californiaOnly) url.searchParams.set("region", "ca");
-        const res = await fetch(url.toString());
+        const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
+        if (controller.signal.aborted) return;
         setFires(data.slice(0, 1000));
       } catch (e) {
+        if (controller.signal.aborted) return;
         setErr(String(e));
       } finally {
+        if (controller.signal.aborted) return;
         setLoading(false);
       }
     }
     load();
+
+    return () => {
+      controller.abort();
+    };
   }, [californiaOnly]);
 
   return (
@@ -233,10 +242,11 @@ export default function App() {
       <div className="main-layout">
         <section className="controls-panel">
           <h3>Filters</h3>
-          <label>
+          <div>
             <span>Region</span>
-            <label className="checkbox-row" data-testid="ca-toggle-label">
+            <label htmlFor="ca-toggle" className="checkbox-row" data-testid="ca-toggle-label">
               <input
+                id="ca-toggle"
                 data-testid="ca-toggle"
                 type="checkbox"
                 checked={californiaOnly}
@@ -245,7 +255,7 @@ export default function App() {
               California only
             </label>
             <small>Data shown is US-only; toggle narrows to California.</small>
-          </label>
+          </div>
           <label>
             Confidence
             <select
