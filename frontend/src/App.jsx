@@ -413,7 +413,7 @@ export default function App() {
             center={center}
             zoom={5}
             minZoom={4}
-            maxBounds={[[24, -125], [50, -66]]}
+            maxBounds={[[18, -179], [72, -66]]}
             maxBoundsViscosity={0.8}
             className="map-container"
           >
