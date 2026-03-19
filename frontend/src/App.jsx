@@ -10,6 +10,7 @@ const CONFIDENCE_OPTIONS = ["all", "high", "nominal", "low"];
 const STATE_OPTIONS = [
   { value: "all", label: "All states" },
   { value: "al", label: "Alabama" },
+  { value: "ak", label: "Alaska" },
   { value: "ar", label: "Arkansas" },
   { value: "az", label: "Arizona" },
   { value: "co", label: "Colorado" },
@@ -17,6 +18,7 @@ const STATE_OPTIONS = [
   { value: "de", label: "Delaware" },
   { value: "fl", label: "Florida" },
   { value: "ga", label: "Georgia" },
+  { value: "hi", label: "Hawaii" },
   { value: "id", label: "Idaho" },
   { value: "il", label: "Illinois" },
   { value: "in", label: "Indiana" },
@@ -60,6 +62,7 @@ const STATE_OPTIONS = [
 
 const STATE_BOUNDS = {
   al: L.latLngBounds([[30.1, -88.5], [35.0, -84.8]]),
+  ak: L.latLngBounds([[51.0, -179.0], [71.5, -129.9]]),
   ar: L.latLngBounds([[33.0, -94.6], [36.5, -89.6]]),
   az: L.latLngBounds([[31.3, -114.8], [37.0, -109.0]]),
   co: L.latLngBounds([[37.0, -109.1], [41.0, -102.0]]),
@@ -67,6 +70,7 @@ const STATE_BOUNDS = {
   de: L.latLngBounds([[38.4, -75.8], [39.8, -75.0]]),
   fl: L.latLngBounds([[24.5, -87.7], [31.0, -80.0]]),
   ga: L.latLngBounds([[30.3, -85.6], [35.0, -80.8]]),
+  hi: L.latLngBounds([[18.8, -160.5], [22.5, -154.8]]),
   id: L.latLngBounds([[42.0, -117.2], [49.0, -111.0]]),
   il: L.latLngBounds([[36.9, -91.5], [42.5, -87.0]]),
   in: L.latLngBounds([[37.8, -88.1], [41.8, -84.8]]),
@@ -170,10 +174,8 @@ function FitBounds({ fires, selectedState }) {
 
   useEffect(() => {
     if (selectedState && selectedState !== "all" && STATE_BOUNDS[selectedState]) {
-      if (fires.length === 0) {
-        map.fitBounds(STATE_BOUNDS[selectedState], { padding: [50, 50] });
-        return;
-      }
+      map.fitBounds(STATE_BOUNDS[selectedState], { padding: [50, 50] });
+      return;
     }
 
     if (fires.length === 0) {
@@ -197,13 +199,6 @@ function FitBounds({ fires, selectedState }) {
     }
 
     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 7 });
-    if (typeof map.getCenter === "function" && typeof US_BOUNDS.contains === "function") {
-      const center = map.getCenter();
-      if (!US_BOUNDS.contains(center)) {
-        const nextZoom = typeof map.getZoom === "function" ? Math.max(map.getZoom(), 4) : 5;
-        map.setView(US_CENTER, nextZoom);
-      }
-    }
     if (typeof map.getZoom === "function" && typeof map.setZoom === "function" && map.getZoom() < 4) {
       map.setZoom(4);
     }
