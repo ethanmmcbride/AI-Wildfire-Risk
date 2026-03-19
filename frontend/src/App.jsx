@@ -5,7 +5,7 @@ import "./index.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const US_BOUNDS = L.latLngBounds([[24, -125], [50, -66]]);
-const US_CENTER = [39.8283, -98.5795];
+const US_CENTER = [39, -100];
 const CONFIDENCE_OPTIONS = ["all", "high", "nominal", "low"];
 const STATE_OPTIONS = [
   { value: "all", label: "All states" },
@@ -173,7 +173,11 @@ function FitBounds({ fires, selectedState }) {
   const map = useMap();
 
   useEffect(() => {
-    if (selectedState && selectedState !== "all" && STATE_BOUNDS[selectedState]) {
+    if (selectedState === "all") {
+      map.setView(US_CENTER, 5);
+      return;
+    }
+    if (selectedState && STATE_BOUNDS[selectedState]) {
       map.fitBounds(STATE_BOUNDS[selectedState], { padding: [50, 50] });
       return;
     }
@@ -289,10 +293,7 @@ export default function App() {
     }
   }, [filteredFires, selectedEventId]);
 
-  const center = useMemo(() => {
-    if (filteredFires.length === 0) return US_CENTER;
-    return [filteredFires[0].lat, filteredFires[0].lon];
-  }, [filteredFires]);
+  const center = useMemo(() => US_CENTER, []);
 
   useEffect(() => {
     const controller = new AbortController();
