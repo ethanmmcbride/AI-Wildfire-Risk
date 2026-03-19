@@ -40,14 +40,14 @@ afterEach(() => {
 });
 
 describe("App Component", () => {
-  it("requests California region by default", async () => {
+  it("requests all states by default", async () => {
     render(<App />);
     await screen.findByTestId("events-count");
 
     expect(globalThis.fetch).toHaveBeenCalled();
     const firstUrl = globalThis.fetch.mock.calls[0][0];
     expect(firstUrl).toContain("/fires");
-    expect(firstUrl).toContain("region=ca");
+    expect(firstUrl).not.toContain("region=");
   });
 
   it("renders legend and event count", async () => {
@@ -87,16 +87,27 @@ describe("App Component", () => {
     expect(screen.getByTestId("events-count")).toHaveTextContent("0 events");
   });
 
-  it("can toggle California-only region filter off", async () => {
+  it("can select all states", async () => {
     render(<App />);
     await screen.findByTestId("events-count");
 
-    fireEvent.click(screen.getByTestId("ca-toggle"));
+    fireEvent.change(screen.getByTestId("state-select"), { target: { value: "all" } });
 
     await waitFor(() => {
       const latestUrl = globalThis.fetch.mock.calls.at(-1)[0];
       expect(latestUrl).toContain("/fires");
       expect(latestUrl).not.toContain("region=ca");
+    });
+  });
+
+  it("can change selected state", async () => {
+    render(<App />);
+    await screen.findByTestId("events-count");
+
+    fireEvent.change(screen.getByTestId("state-select"), { target: { value: "wa" } });
+    await waitFor(() => {
+      const latestUrl = globalThis.fetch.mock.calls.at(-1)[0];
+      expect(latestUrl).toContain("region=wa");
     });
   });
 });

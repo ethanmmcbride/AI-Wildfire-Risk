@@ -7,6 +7,106 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const US_BOUNDS = L.latLngBounds([[24, -125], [50, -66]]);
 const US_CENTER = [39.8283, -98.5795];
 const CONFIDENCE_OPTIONS = ["all", "high", "nominal", "low"];
+const STATE_OPTIONS = [
+  { value: "all", label: "All states" },
+  { value: "al", label: "Alabama" },
+  { value: "ar", label: "Arkansas" },
+  { value: "az", label: "Arizona" },
+  { value: "co", label: "Colorado" },
+  { value: "ct", label: "Connecticut" },
+  { value: "de", label: "Delaware" },
+  { value: "fl", label: "Florida" },
+  { value: "ga", label: "Georgia" },
+  { value: "id", label: "Idaho" },
+  { value: "il", label: "Illinois" },
+  { value: "in", label: "Indiana" },
+  { value: "ia", label: "Iowa" },
+  { value: "ks", label: "Kansas" },
+  { value: "ky", label: "Kentucky" },
+  { value: "la", label: "Louisiana" },
+  { value: "me", label: "Maine" },
+  { value: "md", label: "Maryland" },
+  { value: "ma", label: "Massachusetts" },
+  { value: "mi", label: "Michigan" },
+  { value: "mn", label: "Minnesota" },
+  { value: "ms", label: "Mississippi" },
+  { value: "mo", label: "Missouri" },
+  { value: "mt", label: "Montana" },
+  { value: "ne", label: "Nebraska" },
+  { value: "nv", label: "Nevada" },
+  { value: "nh", label: "New Hampshire" },
+  { value: "nj", label: "New Jersey" },
+  { value: "nm", label: "New Mexico" },
+  { value: "ny", label: "New York" },
+  { value: "nc", label: "North Carolina" },
+  { value: "nd", label: "North Dakota" },
+  { value: "oh", label: "Ohio" },
+  { value: "ok", label: "Oklahoma" },
+  { value: "or", label: "Oregon" },
+  { value: "pa", label: "Pennsylvania" },
+  { value: "ri", label: "Rhode Island" },
+  { value: "sc", label: "South Carolina" },
+  { value: "sd", label: "South Dakota" },
+  { value: "tn", label: "Tennessee" },
+  { value: "tx", label: "Texas" },
+  { value: "ut", label: "Utah" },
+  { value: "vt", label: "Vermont" },
+  { value: "va", label: "Virginia" },
+  { value: "wa", label: "Washington" },
+  { value: "wv", label: "West Virginia" },
+  { value: "wi", label: "Wisconsin" },
+  { value: "wy", label: "Wyoming" },
+];
+
+const STATE_BOUNDS = {
+  al: L.latLngBounds([[30.1, -88.5], [35.0, -84.8]]),
+  ar: L.latLngBounds([[33.0, -94.6], [36.5, -89.6]]),
+  az: L.latLngBounds([[31.3, -114.8], [37.0, -109.0]]),
+  co: L.latLngBounds([[37.0, -109.1], [41.0, -102.0]]),
+  ct: L.latLngBounds([[40.9, -73.7], [42.0, -71.8]]),
+  de: L.latLngBounds([[38.4, -75.8], [39.8, -75.0]]),
+  fl: L.latLngBounds([[24.5, -87.7], [31.0, -80.0]]),
+  ga: L.latLngBounds([[30.3, -85.6], [35.0, -80.8]]),
+  id: L.latLngBounds([[42.0, -117.2], [49.0, -111.0]]),
+  il: L.latLngBounds([[36.9, -91.5], [42.5, -87.0]]),
+  in: L.latLngBounds([[37.8, -88.1], [41.8, -84.8]]),
+  ia: L.latLngBounds([[40.4, -96.6], [43.5, -90.1]]),
+  ks: L.latLngBounds([[36.9, -102.1], [40.0, -94.6]]),
+  ky: L.latLngBounds([[36.5, -89.6], [39.2, -81.9]]),
+  la: L.latLngBounds([[29.0, -94.0], [33.0, -88.8]]),
+  me: L.latLngBounds([[43.0, -71.1], [47.5, -66.9]]),
+  md: L.latLngBounds([[37.9, -79.5], [39.7, -75.0]]),
+  ma: L.latLngBounds([[41.2, -73.5], [42.9, -69.9]]),
+  mi: L.latLngBounds([[41.7, -90.4], [48.3, -82.4]]),
+  mn: L.latLngBounds([[43.5, -96.5], [49.4, -89.5]]),
+  ms: L.latLngBounds([[30.2, -91.7], [35.0, -88.0]]),
+  mo: L.latLngBounds([[35.9, -95.8], [40.6, -89.1]]),
+  mt: L.latLngBounds([[44.4, -116.0], [49.0, -104.0]]),
+  ne: L.latLngBounds([[40.0, -104.1], [43.0, -95.3]]),
+  nv: L.latLngBounds([[35.0, -120.0], [42.0, -114.0]]),
+  nh: L.latLngBounds([[42.7, -72.6], [45.3, -70.7]]),
+  nj: L.latLngBounds([[38.9, -75.6], [41.4, -73.9]]),
+  nm: L.latLngBounds([[31.3, -109.1], [37.0, -103.0]]),
+  ny: L.latLngBounds([[40.5, -79.8], [45.0, -71.8]]),
+  nc: L.latLngBounds([[33.8, -84.3], [36.6, -75.5]]),
+  nd: L.latLngBounds([[45.9, -104.0], [49.0, -96.5]]),
+  oh: L.latLngBounds([[38.4, -84.8], [41.9, -80.5]]),
+  ok: L.latLngBounds([[33.6, -103.0], [37.0, -94.4]]),
+  or: L.latLngBounds([[42.0, -124.8], [46.3, -116.5]]),
+  pa: L.latLngBounds([[39.7, -80.5], [42.5, -74.7]]),
+  ri: L.latLngBounds([[41.1, -71.9], [42.0, -71.1]]),
+  sc: L.latLngBounds([[32.0, -83.4], [35.2, -78.4]]),
+  sd: L.latLngBounds([[42.4, -104.1], [45.9, -96.4]]),
+  tn: L.latLngBounds([[34.9, -90.3], [36.7, -81.7]]),
+  tx: L.latLngBounds([[25.8, -106.6], [36.5, -93.5]]),
+  ut: L.latLngBounds([[37.0, -114.1], [42.0, -109.0]]),
+  vt: L.latLngBounds([[42.7, -73.4], [45.0, -71.4]]),
+  va: L.latLngBounds([[36.5, -83.7], [39.5, -75.2]]),
+  wa: L.latLngBounds([[45.5, -124.8], [49.0, -116.9]]),
+  wv: L.latLngBounds([[37.2, -82.6], [40.6, -77.7]]),
+  wi: L.latLngBounds([[42.5, -92.9], [47.3, -86.2]]),
+  wy: L.latLngBounds([[40.9, -111.1], [45.0, -104.0]]),
+};
 
 function normalizeConfidence(confidence) {
   const normalized = String(confidence ?? "").trim().toLowerCase();
@@ -65,10 +165,17 @@ function buildFireId(fire, index) {
   ].join("|");
 }
 
-function FitBounds({ fires }) {
+function FitBounds({ fires, selectedState }) {
   const map = useMap();
 
   useEffect(() => {
+    if (selectedState && selectedState !== "all" && STATE_BOUNDS[selectedState]) {
+      if (fires.length === 0) {
+        map.fitBounds(STATE_BOUNDS[selectedState], { padding: [50, 50] });
+        return;
+      }
+    }
+
     if (fires.length === 0) {
       map.setView(US_CENTER, 5);
       return;
@@ -100,7 +207,7 @@ function FitBounds({ fires }) {
     if (typeof map.getZoom === "function" && typeof map.setZoom === "function" && map.getZoom() < 4) {
       map.setZoom(4);
     }
-  }, [fires, map]);
+  }, [fires, selectedState, map]);
 
   return null;
 }
@@ -121,7 +228,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [confidenceFilter, setConfidenceFilter] = useState("all");
-  const [californiaOnly, setCaliforniaOnly] = useState(true);
+  const [selectedState, setSelectedState] = useState("all");
   const [minBrightness, setMinBrightness] = useState("0");
   const [minFrp, setMinFrp] = useState("0");
   const [sortKey, setSortKey] = useState("brightness");
@@ -202,7 +309,7 @@ export default function App() {
 
         const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
         const url = new URL(`${apiBase}/fires`, window.location.origin);
-        if (californiaOnly) url.searchParams.set("region", "ca");
+        if (selectedState && selectedState !== "all") url.searchParams.set("region", selectedState);
         const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -221,7 +328,7 @@ export default function App() {
     return () => {
       controller.abort();
     };
-  }, [californiaOnly]);
+  }, [selectedState]);
 
   return (
     <div className="ui-shell">
@@ -242,20 +349,21 @@ export default function App() {
       <div className="main-layout">
         <section className="controls-panel">
           <h3>Filters</h3>
-          <div>
-            <span>Region</span>
-            <label htmlFor="ca-toggle" className="checkbox-row" data-testid="ca-toggle-label">
-              <input
-                id="ca-toggle"
-                data-testid="ca-toggle"
-                type="checkbox"
-                checked={californiaOnly}
-                onChange={(e) => setCaliforniaOnly(e.target.checked)}
-              />
-              California only
-            </label>
-            <small>Data shown is US-only; toggle narrows to California.</small>
-          </div>
+          <label>
+            State
+            <select
+              data-testid="state-select"
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+            >
+              {STATE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <small>Data shown is US-only; choose a state or show all states.</small>
           <label>
             Confidence
             <select
@@ -314,7 +422,7 @@ export default function App() {
             maxBoundsViscosity={0.8}
             className="map-container"
           >
-            <FitBounds fires={filteredFires} />
+            <FitBounds fires={filteredFires} selectedState={selectedState} />
             <FocusOnSelectedFire fire={selectedFire} />
             <TileLayer
               attribution="&copy; OpenStreetMap contributors"
