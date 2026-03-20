@@ -18,7 +18,7 @@ jobs:
         env:
           PYTHONPATH: backend/src
         run: |
-          pytest backend/tests
+          pytest backend/tests -v --cov=ai_wildfire_tracker.api.server --cov-fail-under=50
 
   test-frontend:
     runs-on: ubuntu-latest
