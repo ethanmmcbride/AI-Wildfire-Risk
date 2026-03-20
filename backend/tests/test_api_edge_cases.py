@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
-from src.ai_wildfire_tracker.api.server import app
-from src.ai_wildfire_tracker.api.server import compute_risk
+from ai_wildfire_tracker.api.server import app
+from ai_wildfire_tracker.api.server import compute_risk
 
 client = TestClient(app)
 
