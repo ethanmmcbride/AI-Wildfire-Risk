@@ -203,7 +203,12 @@ export default function App() {
         const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
         const url = new URL(`${apiBase}/fires`, window.location.origin);
         if (californiaOnly) url.searchParams.set("region", "ca");
-        const res = await fetch(url.toString(), { signal: controller.signal });
+        const res = await fetch(url.toString(), { 
+          signal: controller.signal,
+          headers: {
+            'X-API-Key': 'dev-secret-key-123' // Matches the EXPECTED_API_KEY in server.py
+          }
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (controller.signal.aborted) return;
@@ -346,6 +351,7 @@ export default function App() {
                         <div className="popup-content">
                           <div><b>Severity:</b> {fire.severity}</div>
                           <div><b>Risk:</b> {fire.risk.toFixed(2)}</div>
+                          <AIPredictionPanel fireData={fire} />
                           <div><b>Lat/Lon:</b> {fire.lat.toFixed(3)}, {fire.lon.toFixed(3)}</div>
                           <div><b>Brightness:</b> {fire.brightness}</div>
                           <div><b>FRP:</b> {fire.frp}</div>
