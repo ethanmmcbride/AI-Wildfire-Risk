@@ -57,3 +57,22 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run End-to-End Tests
         run: npm run test:e2e:ci
+
+  security-scan:
+    name: Run Bandit Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Install Bandit
+        run: pip install bandit
+        
+      - name: Run Bandit on Backend Source
+        # -r parses recursively, -ll filters for medium and high severity issues only
+        run: bandit -r backend/src/ -ll
