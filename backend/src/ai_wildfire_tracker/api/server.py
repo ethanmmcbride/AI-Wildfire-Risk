@@ -1,6 +1,7 @@
 import logging
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
 import duckdb
 import os
 
@@ -60,6 +61,13 @@ def get_fires(
 ):
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
+    valid_regions = ["ca", "us", None]
+    if region is not None and region.lower() not in valid_regions:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid region '{region}'. Must be one of: ca, us"
+        )
+    
     if not os.path.exists(DB_PATH):
         logger.warning("Database file does not exist: %s", DB_PATH)
         return []
