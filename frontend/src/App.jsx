@@ -232,11 +232,7 @@ export default function App() {
             {loading ? "Loading..." : `${filteredFires.length} points (of ${preparedFires.length} total)`}
           </span>
         </div>
-        {err && (
-          <div className="error-banner">
-            Error: {err} — check VITE_API_BASE_URL and that your API is running.
-          </div>
-        )}
+
       </header>
 
       <div className="main-layout">
@@ -304,67 +300,65 @@ export default function App() {
           </ul>
         </section>
 
-        <section className="map-panel">
-          {filteredFires.length === 0 && !loading && <div className="overlay-note">No events match filters.</div>}
-          <MapContainer
-            center={center}
-            zoom={5}
-            minZoom={4}
-            maxBounds={[[24, -125], [50, -66]]}
-            maxBoundsViscosity={0.8}
-            className="map-container"
-          >
-            <FitBounds fires={filteredFires} />
-            <FocusOnSelectedFire fire={selectedFire} />
-            <TileLayer
-              attribution="&copy; OpenStreetMap contributors"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+<section className="map-panel">
+          {err ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#1e293b', color: '#f87171', padding: '40px', textAlign: 'center', borderRadius: '8px' }}>
+              <h2 style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️ AI Tracking System Offline</h2>
+              <p style={{ color: '#cbd5e1', marginBottom: '20px' }}>
+                We are currently unable to connect to the wildfire database. Please ensure the backend API is actively running.
+              </p>
+              <p style={{ fontSize: '12px', color: '#64748b' }}>Developer Details: {err}</p>
+            </div>
+          ) : (
+            <>
+              {filteredFires.length === 0 && !loading && <div className="overlay-note">No events match filters.</div>}
+              <MapContainer
+                center={center}
+                zoom={5}
+                minZoom={4}
+                maxBounds={[[24, -125], [50, -66]]}
+                maxBoundsViscosity={0.8}
+                className="map-container"
+              >
+                <FitBounds fires={filteredFires} />
+                <FocusOnSelectedFire fire={selectedFire} />
+                <TileLayer
+                  attribution="&copy; OpenStreetMap contributors"
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
 
-            {sortedFires.map((fire) => {
-              const selected = fire.id === selectedEventId;
-              return (
-                <CircleMarker
-                  key={fire.id}
-                  center={[fire.lat, fire.lon]}
-                  radius={getMarkerRadius(fire)}
-                  pathOptions={{
-                    color: getMarkerColor(fire),
-                    fillColor: getMarkerColor(fire),
-                    fillOpacity: 0.75,
-                    weight: selected ? 3 : 1,
-                  }}
-                  eventHandlers={{ click: () => setSelectedEventId(fire.id) }}
-                >
-                  <Popup>
-                    <div className="popup-content">
-                      <div>
-                        <b>Severity:</b> {fire.severity}
-                      </div>
-                      <div>
-                        <b>Risk:</b> {fire.risk.toFixed(2)}
-                      </div>
-                      <div>
-                        <b>Lat/Lon:</b> {fire.lat.toFixed(3)}, {fire.lon.toFixed(3)}
-                      </div>
-                      <div>
-                        <b>Brightness:</b> {fire.brightness}
-                      </div>
-                      <div>
-                        <b>FRP:</b> {fire.frp}
-                      </div>
-                      <div>
-                        <b>Confidence:</b> {fire.confidence}
-                      </div>
-                      <div>
-                        <b>Time:</b> {fire.acq_date ?? "N/A"} {fire.acq_time ?? ""}
-                      </div>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              );
-            })}
-          </MapContainer>
+                {sortedFires.map((fire) => {
+                  const selected = fire.id === selectedEventId;
+                  return (
+                    <CircleMarker
+                      key={fire.id}
+                      center={[fire.lat, fire.lon]}
+                      radius={getMarkerRadius(fire)}
+                      pathOptions={{
+                        color: getMarkerColor(fire),
+                        fillColor: getMarkerColor(fire),
+                        fillOpacity: 0.75,
+                        weight: selected ? 3 : 1,
+                      }}
+                      eventHandlers={{ click: () => setSelectedEventId(fire.id) }}
+                    >
+                      <Popup>
+                        <div className="popup-content">
+                          <div><b>Severity:</b> {fire.severity}</div>
+                          <div><b>Risk:</b> {fire.risk.toFixed(2)}</div>
+                          <div><b>Lat/Lon:</b> {fire.lat.toFixed(3)}, {fire.lon.toFixed(3)}</div>
+                          <div><b>Brightness:</b> {fire.brightness}</div>
+                          <div><b>FRP:</b> {fire.frp}</div>
+                          <div><b>Confidence:</b> {fire.confidence}</div>
+                          <div><b>Time:</b> {fire.acq_date ?? "N/A"} {fire.acq_time ?? ""}</div>
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  );
+                })}
+              </MapContainer>
+            </>
+          )}
         </section>
 
         <aside className="events-panel">
