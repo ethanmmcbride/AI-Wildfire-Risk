@@ -79,7 +79,7 @@ def get_fires(
     con = duckdb.connect(DB_PATH)
     try:
         query = """
-            SELECT latitude, longitude, bright_ti4, frp, confidence
+            SELECT latitude, longitude, bright_ti4, frp, confidence, acq_date, acq_time
             FROM fires
         """
         params: list[object] = []
@@ -143,6 +143,8 @@ def get_fires(
             "brightness": r[2],
             "frp": r[3],
             "confidence": r[4],
+            "acq_date": r[5],
+            "acq_time": r[6],
             "risk": compute_risk(r[2], r[3]),
         }
         for r in rows

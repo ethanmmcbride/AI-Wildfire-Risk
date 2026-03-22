@@ -64,6 +64,8 @@ def test_get_fires_returns_data():
     assert fire["lat"] == 34.0
     assert fire["lon"] == -118.0
     assert fire["confidence"] == "high"
+    assert fire["acq_date"] == "2024-01-01"
+    assert fire["acq_time"] == "1200"
 
 
 def test_health_check_root():
