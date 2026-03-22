@@ -1,8 +1,13 @@
-import os, joblib, json
+import json
+import os
 from datetime import UTC, datetime
+
+import joblib
+
 from .configs import ARTIFACT_DIR, MODEL_FILENAME
 
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
+
 
 def save_model(model, metadata: dict):
     path = os.path.join(ARTIFACT_DIR, MODEL_FILENAME)
@@ -12,6 +17,7 @@ def save_model(model, metadata: dict):
     with open(meta_path, "w") as f:
         json.dump(metadata, f, indent=2)
     return path
+
 
 def load_model():
     path = os.path.join(ARTIFACT_DIR, MODEL_FILENAME)

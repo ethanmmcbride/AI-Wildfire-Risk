@@ -2,6 +2,7 @@ from pathlib import Path
 from sklearn.linear_model import LogisticRegression
 from ai_wildfire import model_store
 
+
 def test_save_and_load_model(tmp_path, monkeypatch):
     monkeypatch.setattr(model_store, "ARTIFACT_DIR", tmp_path)
     model = LogisticRegression()

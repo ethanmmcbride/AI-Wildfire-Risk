@@ -9,7 +9,6 @@ from pathlib import Path
 
 import duckdb
 
-
 SEED_INSERT_SQL = """
 INSERT INTO fires VALUES
     (34.05, -118.25, 360.0, 300.0, 55.0, '2025-06-01', '1210', 'high'),

@@ -1,8 +1,9 @@
 from fastapi.testclient import TestClient
-from ai_wildfire_tracker.api.server import app
-from ai_wildfire_tracker.api.server import compute_risk
+
+from ai_wildfire_tracker.api.server import app, compute_risk
 
 client = TestClient(app)
+
 
 def test_api_rejects_invalid_region_parameter():
     """
@@ -11,13 +12,14 @@ def test_api_rejects_invalid_region_parameter():
     """
     # 1. Send request with invalid region 'mars'
     response = client.get("/fires?region=mars")
-    
+
     # 2. Check that the status code is exactly 400
     assert response.status_code == 400
-    
+
     # 3. Check that the error message is helpful to the developer
     data = response.json()
     assert "Invalid region 'mars'" in data["detail"]
+
 
 def test_api_accepts_valid_region_parameter():
     """
@@ -26,12 +28,13 @@ def test_api_accepts_valid_region_parameter():
     """
     # 1. Send request with valid region 'ca'
     response = client.get("/fires?region=ca")
-    
+
     # 2. Check that the status code is exactly 200
     assert response.status_code == 200
-    
+
     # 3. Ensure the payload is a list (even if empty, it should be a valid JSON array)
     assert isinstance(response.json(), list)
+
 
 def test_health_check_endpoint():
     """
@@ -45,8 +48,8 @@ def test_health_check_endpoint():
 
 def test_api_sqli_defense():
     """
-    Test Plan: Security 
-    Making sure that SQL payloads in the parameter will not manipulate the db query and will be treated 
+    Test Plan: Security
+    Making sure that SQL payloads in the parameter will not manipulate the db query and will be treated
     regular strings
     """
     # 1. Send a classic SQL injection payload
@@ -58,6 +61,7 @@ def test_api_sqli_defense():
 
     # 3. Because the payload is safely escaped as a literal string, it won't match any real confidence levels, returning an empty list.
     assert response.json() == []
+
 
 def test_compute_risk_logic_boundaries():
     """

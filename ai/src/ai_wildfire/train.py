@@ -1,12 +1,17 @@
-#python -m ai_wildfire.train --limit 500
+# python -m ai_wildfire.train --limit 500
+import json
+import os
+
 import click
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+
+from .configs import ARTIFACT_DIR, METRICS_FILENAME, RANDOM_SEED
 from .data_loader import load_firms_table
 from .features import build_feature_matrix
-from .utils import set_seed, evaluate_model
 from .model_store import save_model
-from .configs import RANDOM_SEED, ARTIFACT_DIR, METRICS_FILENAME
+from .utils import evaluate_model, set_seed
+
 
 @click.command()
 @click.option("--limit", default=None, help="Limit rows to load (for quick dev)")
@@ -17,7 +22,9 @@ def train(limit, test_size):
     df = load_firms_table(limit=limit)
     print(f"Loaded {len(df)} rows")
     X, y = build_feature_matrix(df)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=RANDOM_SEED)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=RANDOM_SEED
+    )
     model = LogisticRegression(max_iter=200)
     model.fit(X_train, y_train)
     metrics = evaluate_model(model, X_test, y_test)
@@ -25,12 +32,11 @@ def train(limit, test_size):
     meta = {"n_rows": len(df), "test_size": test_size, "model": "LogisticRegression"}
     save_path = save_model(model, meta)
     print("Model saved to", save_path)
-    # persist metrics for CI artifact inspection
-    import json, os
     os.makedirs(ARTIFACT_DIR, exist_ok=True)
 
     with open(ARTIFACT_DIR / METRICS_FILENAME, "w") as f:
         json.dump({"metrics": metrics}, f, indent=2)
+
 
 if __name__ == "__main__":
     train()

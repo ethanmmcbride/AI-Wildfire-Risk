@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy as np
+
 
 def confidence_to_bin(conf_series: pd.Series) -> pd.Series:
     """
@@ -21,8 +21,8 @@ def confidence_to_bin(conf_series: pd.Series) -> pd.Series:
     s = conf_series.astype(str).str.strip().str.lower()
 
     text_map = {
-        "n": 0,          # nominal (your dataset)
-        "h": 1,          # high (your dataset)
+        "n": 0,  # nominal (your dataset)
+        "h": 1,  # high (your dataset)
         "low": 0,
         "nominal": 0,
         "high": 1,
@@ -31,6 +31,7 @@ def confidence_to_bin(conf_series: pd.Series) -> pd.Series:
     }
 
     return s.map(text_map).fillna(0).astype(int)
+
 
 def basic_preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -52,6 +53,7 @@ def basic_preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df["lon_bin"] = (df["longitude"].astype(float) // 1).astype(int)
 
     return df
+
 
 def build_feature_matrix(df: pd.DataFrame):
     df = basic_preprocess(df)

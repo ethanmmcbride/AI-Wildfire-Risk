@@ -21,6 +21,7 @@ US_BOUNDS = {
 
 logger = logging.getLogger(__name__)
 
+
 def _find_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
     lowered = {c.lower(): c for c in df.columns}
     for name in candidates:
@@ -123,6 +124,7 @@ def ingest_noaa_hms() -> None:
         logger.info("Inserted %d NOAA HMS records into %s", len(normalized), DB_PATH)
     finally:
         con.close()
+
 
 if __name__ == "__main__":
     logging.basicConfig(

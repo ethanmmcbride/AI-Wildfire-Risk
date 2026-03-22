@@ -16,6 +16,7 @@ US_BOUNDS = {
 
 logger = logging.getLogger(__name__)
 
+
 def ensure_fires_table(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(
         """
@@ -70,6 +71,7 @@ def ingest_firms() -> None:
         logger.info("Inserted %d fire records into %s", len(df), DB_PATH)
     finally:
         con.close()
+
 
 if __name__ == "__main__":
     logging.basicConfig(
