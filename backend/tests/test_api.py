@@ -1,16 +1,18 @@
 # backend/tests/test_api.py
-import pytest
 import os
+
 import duckdb
+import pytest
 from fastapi.testclient import TestClient
 
 # 1. Setup the test environment BEFORE importing the app
 TEST_DB = "test_wildfire.db"
 os.environ["TEST_DB_PATH"] = TEST_DB
 
-from ai_wildfire_tracker.api.server import app
+from ai_wildfire_tracker.api.server import app  # noqa: E402
 
 client = TestClient(app)
+
 
 @pytest.fixture(autouse=True)
 def setup_teardown_db():
@@ -31,7 +33,7 @@ def setup_teardown_db():
     """)
     # Insert one sample row
     con.execute("""
-        INSERT INTO fires VALUES 
+        INSERT INTO fires VALUES
         (34.0, -118.0, 350.5, 300.0, 50.0, '2024-01-01', '1200', 'high')
     """)
     con.execute("""
@@ -39,31 +41,32 @@ def setup_teardown_db():
         (10.0, -70.0, 280.0, 250.0, 5.0, '2024-01-01', '1300', 'low')
     """)
     con.close()
-    
+
     yield  # Run the test
-    
+
     # Teardown: Delete the temp DB file
     if os.path.exists(TEST_DB):
         os.remove(TEST_DB)
+
 
 def test_get_fires_returns_data():
     """Test that the endpoint correctly reads our mock data."""
     response = client.get("/fires")
     assert response.status_code == 200
     data = response.json()
-    
+
     # Verify we got the list back
     assert isinstance(data, list)
     assert len(data) == 1
-    
+
     # Verify the specific values we inserted
     fire = data[0]
     assert fire["lat"] == 34.0
     assert fire["lon"] == -118.0
     assert fire["confidence"] == "high"
 
+
 def test_health_check_root():
     """Ensure root doesn't crash."""
     response = client.get("/")
     assert response.status_code in [200, 404]
-    
