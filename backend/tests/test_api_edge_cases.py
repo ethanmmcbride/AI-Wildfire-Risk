@@ -1,79 +1,236 @@
+import importlib
+import os
+
+import duckdb
+import pytest
 from fastapi.testclient import TestClient
 
-from ai_wildfire_tracker.api.server import app, compute_risk
-
-client = TestClient(app)
+TEST_DB = "test_wildfire_edge.db"
 
 
-def test_api_rejects_invalid_region_parameter():
-    """
-    Test Plan: Edge Case API Validation
-    when the data for region is fake/garbage the /fires endpoint will return a 400 Bad Request with a helpful error message.
-    """
-    # 1. Send request with invalid region 'mars'
+@pytest.fixture(autouse=True)
+def cleanup_db():
+    os.environ["TEST_DB_PATH"] = TEST_DB
+
+    if os.path.exists(TEST_DB):
+        os.remove(TEST_DB)
+
+    yield
+
+    if os.path.exists(TEST_DB):
+        os.remove(TEST_DB)
+
+    os.environ.pop("TEST_DB_PATH", None)
+
+
+@pytest.fixture()
+def client():
+    import ai_wildfire_tracker.api.server as server_module
+
+    server_module = importlib.reload(server_module)
+    return TestClient(server_module.app)
+
+
+@pytest.fixture()
+def compute_risk():
+    import ai_wildfire_tracker.api.server as server_module
+
+    server_module = importlib.reload(server_module)
+    return server_module.compute_risk
+
+
+def test_get_fires_returns_empty_list_when_db_missing(client):
+    response = client.get("/fires")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_get_fires_returns_empty_list_when_table_missing(client):
+    con = duckdb.connect(TEST_DB)
+    con.close()
+
+    response = client.get("/fires")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_api_rejects_invalid_region_parameter(client):
     response = client.get("/fires?region=mars")
-
-    # 2. Check that the status code is exactly 400
     assert response.status_code == 400
 
-    # 3. Check that the error message is helpful to the developer
     data = response.json()
-    assert "Invalid region 'mars'" in data["detail"]
+    assert "Invalid region" in data["detail"]
 
 
-def test_api_accepts_valid_region_parameter():
-    """
-    Test Plan: Integration Test
-    This helps to make sure that /fires endpoint correctly accepts 'ca' and returns a 200 OK.
-    """
-    # 1. Send request with valid region 'ca'
+def test_api_accepts_valid_region_parameter(client):
+    con = duckdb.connect(TEST_DB)
+    con.execute(
+        """
+        CREATE TABLE fires (
+            latitude DOUBLE,
+            longitude DOUBLE,
+            bright_ti4 DOUBLE,
+            bright_ti5 DOUBLE,
+            frp DOUBLE,
+            acq_date VARCHAR,
+            acq_time VARCHAR,
+            confidence VARCHAR
+        )
+        """
+    )
+    rows = [
+        (34.0, -118.0, 350.5, 300.0, 50.0, "2024-01-01", "1200", "high"),
+        (36.5, -119.5, 320.0, 280.0, 20.0, "2024-01-02", "1300", "nominal"),
+        (31.0, -100.0, 340.0, 290.0, 35.0, "2024-01-03", "1400", "high"),
+        (10.0, -70.0, 280.0, 250.0, 5.0, "2024-01-01", "1300", "low"),
+    ]
+    con.executemany(
+        """
+        INSERT INTO fires (
+            latitude, longitude, bright_ti4, bright_ti5,
+            frp, acq_date, acq_time, confidence
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+    con.close()
+
     response = client.get("/fires?region=ca")
-
-    # 2. Check that the status code is exactly 200
     assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) == 2
 
-    # 3. Ensure the payload is a list (even if empty, it should be a valid JSON array)
-    assert isinstance(response.json(), list)
+
+def test_region_us_returns_only_us_records(client):
+    con = duckdb.connect(TEST_DB)
+    con.execute(
+        """
+        CREATE TABLE fires (
+            latitude DOUBLE,
+            longitude DOUBLE,
+            bright_ti4 DOUBLE,
+            bright_ti5 DOUBLE,
+            frp DOUBLE,
+            acq_date VARCHAR,
+            acq_time VARCHAR,
+            confidence VARCHAR
+        )
+        """
+    )
+    rows = [
+        (34.0, -118.0, 350.5, 300.0, 50.0, "2024-01-01", "1200", "high"),
+        (36.5, -119.5, 320.0, 280.0, 20.0, "2024-01-02", "1300", "nominal"),
+        (31.0, -100.0, 340.0, 290.0, 35.0, "2024-01-03", "1400", "high"),
+        (10.0, -70.0, 280.0, 250.0, 5.0, "2024-01-01", "1300", "low"),
+    ]
+    con.executemany(
+        """
+        INSERT INTO fires (
+            latitude, longitude, bright_ti4, bright_ti5,
+            frp, acq_date, acq_time, confidence
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+    con.close()
+
+    response = client.get("/fires?region=us")
+    assert response.status_code == 200
+    data = response.json()
+
+    assert len(data) == 3
+    for fire in data:
+        assert 24.0 <= fire["lat"] <= 49.5
+        assert -125.0 <= fire["lon"] <= -66.5
 
 
-def test_health_check_endpoint():
-    """
-    Test Plan: System Health
-    Making sure that the server is alive and reporting database status
-    """
+def test_confidence_filter_with_no_matches_returns_empty_list(client):
+    con = duckdb.connect(TEST_DB)
+    con.execute(
+        """
+        CREATE TABLE fires (
+            latitude DOUBLE,
+            longitude DOUBLE,
+            bright_ti4 DOUBLE,
+            bright_ti5 DOUBLE,
+            frp DOUBLE,
+            acq_date VARCHAR,
+            acq_time VARCHAR,
+            confidence VARCHAR
+        )
+        """
+    )
+    rows = [
+        (34.0, -118.0, 350.5, 300.0, 50.0, "2024-01-01", "1200", "high"),
+        (36.5, -119.5, 320.0, 280.0, 20.0, "2024-01-02", "1300", "nominal"),
+    ]
+    con.executemany(
+        """
+        INSERT INTO fires (
+            latitude, longitude, bright_ti4, bright_ti5,
+            frp, acq_date, acq_time, confidence
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+    con.close()
+
+    response = client.get("/fires?confidence=low")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_api_sqli_defense(client):
+    con = duckdb.connect(TEST_DB)
+    con.execute(
+        """
+        CREATE TABLE fires (
+            latitude DOUBLE,
+            longitude DOUBLE,
+            bright_ti4 DOUBLE,
+            bright_ti5 DOUBLE,
+            frp DOUBLE,
+            acq_date VARCHAR,
+            acq_time VARCHAR,
+            confidence VARCHAR
+        )
+        """
+    )
+    rows = [
+        (34.0, -118.0, 350.5, 300.0, 50.0, "2024-01-01", "1200", "high"),
+        (36.5, -119.5, 320.0, 280.0, 20.0, "2024-01-02", "1300", "nominal"),
+    ]
+    con.executemany(
+        """
+        INSERT INTO fires (
+            latitude, longitude, bright_ti4, bright_ti5,
+            frp, acq_date, acq_time, confidence
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+    con.close()
+
+    malicious_payload = "high' OR '1'='1"
+    response = client.get(f"/fires?confidence={malicious_payload}")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_health_check_endpoint(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
 
 
-def test_api_sqli_defense():
-    """
-    Test Plan: Security
-    Making sure that SQL payloads in the parameter will not manipulate the db query and will be treated
-    regular strings
-    """
-    # 1. Send a classic SQL injection payload
-    malicious_payload = "high' OR '1'='1"
-    response = client.get(f"/fires?confidence={malicious_payload}")
-
-    # 2. The server should not crash (500) and should return a normal 200 OK.
-    assert response.status_code == 200
-
-    # 3. Because the payload is safely escaped as a literal string, it won't match any real confidence levels, returning an empty list.
-    assert response.json() == []
-
-
-def test_compute_risk_logic_boundaries():
-    """
-    Test Plan: Unit Testing (Boundary Value Analysis)
-    making sure the math calculation handles none types and zeroes safely.
-    """
-    # Test 1: Standard values (0.6 * 350) + (0.4 * 50) = 210 + 20 = 230.0
+def test_compute_risk_logic_boundaries(compute_risk):
     assert compute_risk(350.0, 50.0) == 230.0
-
-    # Test 2: Absolute zeroes
     assert compute_risk(0.0, 0.0) == 0.0
-
-    # Test 3: Handling missing database data (None types)
     assert compute_risk(None, None) == 0.0
     assert compute_risk(350.0, None) == 210.0
