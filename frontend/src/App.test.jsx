@@ -86,17 +86,33 @@ describe("App Component", () => {
     expect(screen.getByText("No events match filters.")).toBeInTheDocument();
     expect(screen.getByTestId("events-count")).toHaveTextContent("0 events");
   });
+});
 
-  it("can toggle California-only region filter off", async () => {
-    render(<App />);
-    await screen.findByTestId("events-count");
+it("can toggle California-only region filter off", async () => {
+  render(<App />);
+  await screen.findByTestId("events-count");
 
-    fireEvent.click(screen.getByTestId("ca-toggle"));
+  fireEvent.click(screen.getByTestId("ca-toggle"));
 
-    await waitFor(() => {
-      const latestUrl = globalThis.fetch.mock.calls.at(-1)[0];
-      expect(latestUrl).toContain("/fires");
-      expect(latestUrl).not.toContain("region=ca");
-    });
+  await waitFor(() => {
+    const latestUrl = globalThis.fetch.mock.calls.at(-1)[0];
+    expect(latestUrl).toContain("/fires");
+    expect(latestUrl).not.toContain("region=ca");
+  });
+});
+
+it("shows API error state when backend is unavailable", async () => {
+  globalThis.fetch = vi.fn(() =>
+    Promise.resolve({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({}),
+    })
+  );
+
+  render(<App />);
+
+  await waitFor(() => {
+    expect(screen.getByText(/AI Tracking System Offline/i)).toBeInTheDocument();
   });
 });
