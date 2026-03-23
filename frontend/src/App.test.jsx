@@ -87,16 +87,34 @@ describe("App Component", () => {
     expect(screen.getByTestId("events-count")).toHaveTextContent("0 events");
   });
 
-  it("can toggle California-only region filter off", async () => {
+  it("can change state region from dropdown", async () => {
     render(<App />);
     await screen.findByTestId("events-count");
 
-    fireEvent.click(screen.getByTestId("ca-toggle"));
+    fireEvent.change(screen.getByTestId("state-select"), { target: { value: "tx" } });
 
     await waitFor(() => {
       const latestUrl = globalThis.fetch.mock.calls.at(-1)[0];
       expect(latestUrl).toContain("/fires");
-      expect(latestUrl).not.toContain("region=ca");
+      expect(latestUrl).toContain("region=tx");
     });
+  });
+
+  it("renders state dropdown with all 50 states", async () => {
+    render(<App />);
+    const selectElement = screen.getByTestId("state-select");
+    
+    expect(selectElement).toBeInTheDocument();
+    const options = selectElement.querySelectorAll("option");
+    
+    // Should have 50 states
+    expect(options.length).toBe(50);
+    
+    // Verify some specific states are present
+    const stateNames = Array.from(options).map(opt => opt.textContent);
+    expect(stateNames).toContain("California");
+    expect(stateNames).toContain("Texas");
+    expect(stateNames).toContain("Alaska");
+    expect(stateNames).toContain("Hawaii");
   });
 });

@@ -8,6 +8,67 @@ const US_BOUNDS = L.latLngBounds([[24, -125], [50, -66]]);
 const US_CENTER = [39.8283, -98.5795];
 const CONFIDENCE_OPTIONS = ["all", "high", "nominal", "low"];
 
+const STATE_CODES = [
+  "al", "ak", "az", "ar", "ca", "co", "ct", "de", "fl", "ga",
+  "hi", "id", "il", "in", "ia", "ks", "ky", "la", "me", "md",
+  "ma", "mi", "mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj",
+  "nm", "ny", "nc", "nd", "oh", "ok", "or", "pa", "ri", "sc",
+  "sd", "tn", "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy",
+];
+
+const STATE_LABELS = {
+  al: "Alabama",
+  ak: "Alaska",
+  az: "Arizona",
+  ar: "Arkansas",
+  ca: "California",
+  co: "Colorado",
+  ct: "Connecticut",
+  de: "Delaware",
+  fl: "Florida",
+  ga: "Georgia",
+  hi: "Hawaii",
+  id: "Idaho",
+  il: "Illinois",
+  in: "Indiana",
+  ia: "Iowa",
+  ks: "Kansas",
+  ky: "Kentucky",
+  la: "Louisiana",
+  me: "Maine",
+  md: "Maryland",
+  ma: "Massachusetts",
+  mi: "Michigan",
+  mn: "Minnesota",
+  ms: "Mississippi",
+  mo: "Missouri",
+  mt: "Montana",
+  ne: "Nebraska",
+  nv: "Nevada",
+  nh: "New Hampshire",
+  nj: "New Jersey",
+  nm: "New Mexico",
+  ny: "New York",
+  nc: "North Carolina",
+  nd: "North Dakota",
+  oh: "Ohio",
+  ok: "Oklahoma",
+  or: "Oregon",
+  pa: "Pennsylvania",
+  ri: "Rhode Island",
+  sc: "South Carolina",
+  sd: "South Dakota",
+  tn: "Tennessee",
+  tx: "Texas",
+  ut: "Utah",
+  vt: "Vermont",
+  va: "Virginia",
+  wa: "Washington",
+  wv: "West Virginia",
+  wi: "Wisconsin",
+  wy: "Wyoming",
+};
+
 function normalizeConfidence(confidence) {
   const normalized = String(confidence ?? "").trim().toLowerCase();
   if (["h", "high"].includes(normalized)) return "high";
@@ -121,7 +182,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [confidenceFilter, setConfidenceFilter] = useState("all");
-  const [californiaOnly, setCaliforniaOnly] = useState(true);
+  const [selectedState, setSelectedState] = useState("ca");
   const [minBrightness, setMinBrightness] = useState("0");
   const [minFrp, setMinFrp] = useState("0");
   const [sortKey, setSortKey] = useState("brightness");
@@ -202,7 +263,7 @@ export default function App() {
 
         const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
         const url = new URL(`${apiBase}/fires`, window.location.origin);
-        if (californiaOnly) url.searchParams.set("region", "ca");
+        url.searchParams.set("region", selectedState);
         const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -221,7 +282,7 @@ export default function App() {
     return () => {
       controller.abort();
     };
-  }, [californiaOnly]);
+  }, [selectedState]);
 
   return (
     <div className="ui-shell">
@@ -238,20 +299,21 @@ export default function App() {
       <div className="main-layout">
         <section className="controls-panel">
           <h3>Filters</h3>
-          <div>
-            <span>Region</span>
-            <label htmlFor="ca-toggle" className="checkbox-row" data-testid="ca-toggle-label">
-              <input
-                id="ca-toggle"
-                data-testid="ca-toggle"
-                type="checkbox"
-                checked={californiaOnly}
-                onChange={(e) => setCaliforniaOnly(e.target.checked)}
-              />
-              California only
-            </label>
-            <small>Data shown is US-only; toggle narrows to California.</small>
-          </div>
+          <label>
+            Region
+            <select
+              data-testid="state-select"
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+            >
+              {STATE_CODES.map((code) => (
+                <option key={code} value={code}>
+                  {STATE_LABELS[code]}
+                </option>
+              ))}
+            </select>
+            <small>Select a state to filter fire data.</small>
+          </label>
           <label>
             Confidence
             <select

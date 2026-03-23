@@ -31,14 +31,20 @@ def setup_teardown_db():
             confidence VARCHAR
         )
     """)
-    # Insert one sample row
+    # Insert CA fire (lat: 34.0, lon: -118.0)
     con.execute("""
         INSERT INTO fires VALUES
         (34.0, -118.0, 350.5, 300.0, 50.0, '2024-01-01', '1200', 'high')
     """)
+    # Insert TX fire (lat: 31.0, lon: -98.0)
     con.execute("""
         INSERT INTO fires VALUES
-        (10.0, -70.0, 280.0, 250.0, 5.0, '2024-01-01', '1300', 'low')
+        (31.0, -98.0, 280.0, 250.0, 5.0, '2024-01-01', '1300', 'low')
+    """)
+    # Insert NY fire (lat: 42.5, lon: -75.0)
+    con.execute("""
+        INSERT INTO fires VALUES
+        (42.5, -75.0, 320.0, 280.0, 15.0, '2024-01-01', '1400', 'nominal')
     """)
     con.close()
 
@@ -57,18 +63,82 @@ def test_get_fires_returns_data():
 
     # Verify we got the list back
     assert isinstance(data, list)
-    assert len(data) == 1
+    assert len(data) == 3
 
-    # Verify the specific values we inserted
+    # Verify we have fires with our test data (check one of them)
     fire = data[0]
-    assert fire["lat"] == 34.0
-    assert fire["lon"] == -118.0
-    assert fire["confidence"] == "high"
-    assert fire["acq_date"] == "2024-01-01"
-    assert fire["acq_time"] == "1200"
+    assert "lat" in fire
+    assert "lon" in fire
+    assert "confidence" in fire
+    assert "acq_date" in fire
+    assert "acq_time" in fire
 
 
 def test_health_check_root():
     """Ensure root doesn't crash."""
     response = client.get("/")
     assert response.status_code in [200, 404]
+
+
+def test_get_fires_with_ca_region():
+    """Test that filtering by CA region returns only CA fires."""
+    response = client.get("/fires?region=ca")
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Should return only the CA fire (34.0, -118.0)
+    assert len(data) == 1
+    assert data[0]["lat"] == 34.0
+    assert data[0]["lon"] == -118.0
+
+
+def test_get_fires_with_tx_region():
+    """Test that filtering by TX region returns only TX fires."""
+    response = client.get("/fires?region=tx")
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Should return only the TX fire (31.0, -98.0)
+    assert len(data) == 1
+    assert data[0]["lat"] == 31.0
+    assert data[0]["lon"] == -98.0
+
+
+def test_get_fires_with_ny_region():
+    """Test that filtering by NY region returns only NY fires."""
+    response = client.get("/fires?region=ny")
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Should return only the NY fire (42.5, -75.0)
+    assert len(data) == 1
+    assert data[0]["lat"] == 42.5
+    assert data[0]["lon"] == -75.0
+
+
+def test_get_fires_with_us_region():
+    """Test that US region (or no region) returns all fires."""
+    response = client.get("/fires?region=us")
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Should return all 3 fires
+    assert len(data) == 3
+
+
+def test_get_fires_no_region_returns_all():
+    """Test that no region parameter returns all fires within US bounds."""
+    response = client.get("/fires")
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Should return all 3 fires (all within US bounds)
+    assert len(data) == 3
+
+
+def test_get_fires_invalid_region():
+    """Test that invalid region returns 400 error."""
+    response = client.get("/fires?region=xx")
+    assert response.status_code == 400
+    data = response.json()
+    assert "Invalid region" in data["detail"]
