@@ -16,11 +16,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Default Vite React port
-        "http://localhost:3000",
-        "http://127.0.0.1:5173"
-    ],
+    allow_origins=["*"],
     allow_methods=["GET"], # Lock this down to GET requests only
     allow_headers=["*"],
 )
@@ -64,9 +60,7 @@ def health():
 
 
 @app.get("/fires")
-
 def get_fires(
-
     confidence: str | None = Query(default=None, description="Filter by confidence"),
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
     limit: int = Query(default=1000, ge=1, le=5000, description="Max results to return"),
