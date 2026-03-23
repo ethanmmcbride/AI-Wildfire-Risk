@@ -5,6 +5,11 @@ import duckdb
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi import Request
+
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -13,10 +18,18 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Default Vite React port
+        "http://localhost:3000",
+        "http://127.0.0.1:5173"
+    ],
+    allow_methods=["GET"], # Lock this down to GET requests only
     allow_headers=["*"],
 )
 
@@ -59,9 +72,12 @@ def health():
 
 
 @app.get("/fires")
+@limiter.limit("60/minute")
 def get_fires(
+    request: Request, # Required for the limiter to grab the IP
     confidence: str | None = Query(default=None, description="Filter by confidence"),
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
+    limit: int = Query(default=1000, ge=1, le=5000, description="Max results to return"),
 ):
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
@@ -121,8 +137,9 @@ def get_fires(
 
         query += """
             ORDER BY acq_date DESC, acq_time DESC
-            LIMIT 1000
+            LIMIT ?
         """
+        params.append(limit)
 
         rows = con.execute(query, params).fetchall()
         logger.info("Fetched %d fire rows", len(rows))
