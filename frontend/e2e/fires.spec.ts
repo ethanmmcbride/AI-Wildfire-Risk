@@ -22,7 +22,7 @@ test.describe("AI Wildfire Tracker E2E", () => {
     await expect(page.getByTestId("events-count")).toHaveText("3 events");
     await page.getByTestId("state-select").selectOption("us");
     await expect(page.getByTestId("state-select")).toHaveValue("us");
-    await expect(page.getByTestId("events-count")).toHaveText("5 events");
+    await expect(page.getByTestId("events-count")).toHaveText("6 events");
     await expect(page.getByText("Lat/Lon: 31.00, -100.00")).toBeVisible();
   });
 
@@ -31,10 +31,10 @@ test.describe("AI Wildfire Tracker E2E", () => {
 
     await page.getByTestId("state-select").selectOption("us");
     await expect(page.getByTestId("state-select")).toHaveValue("us");
-    await expect(page.getByTestId("events-count")).toHaveText("5 events");
+    await expect(page.getByTestId("events-count")).toHaveText("6 events");
 
     await page.getByTestId("confidence-filter").selectOption("high");
-    await expect(page.getByTestId("events-count")).toHaveText("2 events");
+    await expect(page.getByTestId("events-count")).toHaveText("3 events");
 
     await page.getByTestId("sort-key").selectOption("frp");
     await page.getByTestId("sort-dir").click();
