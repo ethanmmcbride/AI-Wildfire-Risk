@@ -29,7 +29,6 @@ def test_normalize_noaa_hms_with_datetime_column():
         "acq_time",
         "confidence",
     ]
-
     assert len(normalized) == 1
     assert normalized.iloc[0]["latitude"] == 34.1
     assert normalized.iloc[0]["longitude"] == -118.2
@@ -40,19 +39,6 @@ def test_normalize_noaa_hms_with_datetime_column():
     assert normalized.iloc[0]["acq_time"] == "1430"
 
 
-def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
-    db_path = tmp_path / "noaa.db"
-    sample = pd.DataFrame(
-        {
-            "lat": [36.0, None, 48.5],
-            "lon": [-120.0, -121.0, -10.0],
-            "temperature": [310.0, 299.0, 330.0],
-            "frp": [9.5, 3.0, 22.0],
-            "acq_date": ["2024-02-01", "2024-02-01", "2024-02-01"],
-            "acq_time": ["0915", "0930", "1015"],
-        }
-    )
-
 def test_normalize_noaa_hms_with_yearday_column():
     source = pd.DataFrame(
         {
@@ -61,7 +47,7 @@ def test_normalize_noaa_hms_with_yearday_column():
             "temp": [333.0],
             "power": [22.0],
             "conf": ["med"],
-            "yearday": [2024153],  # 2024 day 153 = 2024-06-01
+            "yearday": [2024153],
         }
     )
 
@@ -76,6 +62,7 @@ def test_normalize_noaa_hms_with_yearday_column():
     assert row["confidence"] == "nominal"
     assert row["acq_date"] == "2024-06-01"
     assert row["acq_time"] == "0000"
+
 
 def test_normalize_noaa_hms_filters_out_of_bounds_rows():
     source = pd.DataFrame(
@@ -111,7 +98,7 @@ def test_normalize_noaa_hms_requires_lat_lon():
 
 def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
     db_path = tmp_path / "noaa.db"
-    sample = pd.DataFrame(
+    source = pd.DataFrame(
         {
             "lat": [36.0, None, 48.5],
             "lon": [-120.0, -121.0, -10.0],
@@ -124,7 +111,7 @@ def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
 
     monkeypatch.setattr(noaa_hms, "DB_PATH", str(db_path))
     monkeypatch.setattr(noaa_hms, "NOAA_HMS_CSV_URL", "https://example.test/noaa.csv")
-    monkeypatch.setattr(noaa_hms.pd, "read_csv", lambda _: sample)
+    monkeypatch.setattr(noaa_hms.pd, "read_csv", lambda _: source)
 
     noaa_hms.ingest_noaa_hms()
 
@@ -133,6 +120,7 @@ def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
         """
         SELECT latitude, longitude, bright_ti4, frp, acq_date, acq_time, confidence
         FROM fires
+        ORDER BY acq_date, acq_time
         """
     ).fetchall()
     con.close()
