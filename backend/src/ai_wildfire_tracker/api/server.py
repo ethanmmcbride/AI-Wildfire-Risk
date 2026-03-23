@@ -5,10 +5,6 @@ import duckdb
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from fastapi import Request
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -18,12 +14,8 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 app.add_middleware(
-CORSMiddleware,
+    CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # Default Vite React port
         "http://localhost:3000",
@@ -72,9 +64,9 @@ def health():
 
 
 @app.get("/fires")
-@limiter.limit("60/minute")
+
 def get_fires(
-    request: Request, # Required for the limiter to grab the IP
+
     confidence: str | None = Query(default=None, description="Filter by confidence"),
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
     limit: int = Query(default=1000, ge=1, le=5000, description="Max results to return"),
