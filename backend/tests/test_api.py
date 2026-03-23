@@ -85,7 +85,7 @@ def test_get_fires_with_ca_region():
     response = client.get("/fires?region=ca")
     assert response.status_code == 200
     data = response.json()
-    
+
     # Should return only the CA fire (34.0, -118.0)
     assert len(data) == 1
     assert data[0]["lat"] == 34.0
@@ -97,7 +97,7 @@ def test_get_fires_with_tx_region():
     response = client.get("/fires?region=tx")
     assert response.status_code == 200
     data = response.json()
-    
+
     # Should return only the TX fire (31.0, -98.0)
     assert len(data) == 1
     assert data[0]["lat"] == 31.0
@@ -109,7 +109,7 @@ def test_get_fires_with_ny_region():
     response = client.get("/fires?region=ny")
     assert response.status_code == 200
     data = response.json()
-    
+
     # Should return only the NY fire (42.5, -75.0)
     assert len(data) == 1
     assert data[0]["lat"] == 42.5
@@ -121,7 +121,7 @@ def test_get_fires_with_us_region():
     response = client.get("/fires?region=us")
     assert response.status_code == 200
     data = response.json()
-    
+
     # Should return all 3 fires
     assert len(data) == 3
 
@@ -131,7 +131,7 @@ def test_get_fires_no_region_returns_all():
     response = client.get("/fires")
     assert response.status_code == 200
     data = response.json()
-    
+
     # Should return all 3 fires (all within US bounds)
     assert len(data) == 3
 
