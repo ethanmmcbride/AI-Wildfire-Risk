@@ -100,18 +100,19 @@ describe("App Component", () => {
     });
   });
 
-  it("renders state dropdown with all 50 states", async () => {
+  it("renders state dropdown with all states (50 + US option)", async () => {
     render(<App />);
     const selectElement = screen.getByTestId("state-select");
     
     expect(selectElement).toBeInTheDocument();
     const options = selectElement.querySelectorAll("option");
     
-    // Should have 50 states
-    expect(options.length).toBe(50);
+    // Should have 50 states + US option = 51 options
+    expect(options.length).toBe(51);
     
     // Verify some specific states are present
     const stateNames = Array.from(options).map(opt => opt.textContent);
+    expect(stateNames).toContain("US (All States)");
     expect(stateNames).toContain("California");
     expect(stateNames).toContain("Texas");
     expect(stateNames).toContain("Alaska");

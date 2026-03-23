@@ -9,6 +9,7 @@ const US_CENTER = [39.8283, -98.5795];
 const CONFIDENCE_OPTIONS = ["all", "high", "nominal", "low"];
 
 const STATE_CODES = [
+  "us",
   "al", "ak", "az", "ar", "ca", "co", "ct", "de", "fl", "ga",
   "hi", "id", "il", "in", "ia", "ks", "ky", "la", "me", "md",
   "ma", "mi", "mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj",
@@ -17,6 +18,7 @@ const STATE_CODES = [
 ];
 
 const STATE_LABELS = {
+  us: "US (All States)",
   al: "Alabama",
   ak: "Alaska",
   az: "Arizona",
@@ -67,6 +69,60 @@ const STATE_LABELS = {
   wv: "West Virginia",
   wi: "Wisconsin",
   wy: "Wyoming",
+};
+
+const STATE_CENTERS = {
+  us: { center: [39.8283, -98.5795], zoom: 4 },
+  al: { center: [32.8, -86.8], zoom: 7 },
+  ak: { center: [64.0, -153.0], zoom: 4 },
+  az: { center: [34.2, -111.4], zoom: 7 },
+  ar: { center: [34.7, -92.3], zoom: 7 },
+  ca: { center: [37.0, -120.0], zoom: 6 },
+  co: { center: [39.0, -105.5], zoom: 7 },
+  ct: { center: [41.6, -72.7], zoom: 8 },
+  de: { center: [39.0, -75.4], zoom: 8 },
+  fl: { center: [27.6, -83.8], zoom: 7 },
+  ga: { center: [32.8, -83.6], zoom: 7 },
+  hi: { center: [20.8, -157.4], zoom: 7 },
+  id: { center: [45.5, -114.0], zoom: 6 },
+  il: { center: [40.0, -89.2], zoom: 7 },
+  in: { center: [40.0, -86.0], zoom: 7 },
+  ia: { center: [42.0, -93.1], zoom: 7 },
+  ks: { center: [38.5, -98.0], zoom: 7 },
+  ky: { center: [37.8, -85.7], zoom: 7 },
+  la: { center: [31.0, -91.8], zoom: 7 },
+  me: { center: [45.2, -69.0], zoom: 7 },
+  md: { center: [38.8, -76.8], zoom: 8 },
+  ma: { center: [42.2, -71.8], zoom: 8 },
+  mi: { center: [45.0, -86.0], zoom: 6 },
+  mn: { center: [45.7, -93.9], zoom: 7 },
+  ms: { center: [32.7, -89.6], zoom: 7 },
+  mo: { center: [38.5, -92.3], zoom: 7 },
+  mt: { center: [47.0, -110.0], zoom: 6 },
+  ne: { center: [41.5, -99.8], zoom: 7 },
+  nv: { center: [38.8, -117.0], zoom: 6 },
+  nh: { center: [43.5, -71.6], zoom: 8 },
+  nj: { center: [40.2, -74.5], zoom: 8 },
+  nm: { center: [34.5, -106.2], zoom: 7 },
+  ny: { center: [42.7, -75.6], zoom: 7 },
+  nc: { center: [35.6, -79.8], zoom: 7 },
+  nd: { center: [47.0, -100.5], zoom: 7 },
+  oh: { center: [40.4, -82.6], zoom: 7 },
+  ok: { center: [35.6, -98.5], zoom: 7 },
+  or: { center: [43.8, -120.5], zoom: 6 },
+  pa: { center: [40.6, -77.2], zoom: 7 },
+  ri: { center: [41.7, -71.5], zoom: 8 },
+  sc: { center: [33.9, -81.0], zoom: 7 },
+  sd: { center: [44.5, -100.0], zoom: 7 },
+  tn: { center: [35.8, -86.0], zoom: 7 },
+  tx: { center: [31.0, -99.9], zoom: 6 },
+  ut: { center: [39.3, -111.9], zoom: 7 },
+  vt: { center: [44.0, -72.6], zoom: 8 },
+  va: { center: [37.8, -78.2], zoom: 7 },
+  wa: { center: [47.7, -121.5], zoom: 6 },
+  wv: { center: [38.9, -80.8], zoom: 7 },
+  wi: { center: [44.5, -89.5], zoom: 7 },
+  wy: { center: [43.0, -107.3], zoom: 6 },
 };
 
 function normalizeConfidence(confidence) {
@@ -173,6 +229,18 @@ function FocusOnSelectedFire({ fire }) {
     if (!fire) return;
     map.setView([fire.lat, fire.lon], 8, { animate: true });
   }, [fire, map]);
+
+  return null;
+}
+
+function FocusOnSelectedState({ state }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!state || !STATE_CENTERS[state]) return;
+    const stateConfig = STATE_CENTERS[state];
+    map.setView(stateConfig.center, stateConfig.zoom, { animate: true });
+  }, [state, map]);
 
   return null;
 }
@@ -382,6 +450,7 @@ export default function App() {
                 maxBoundsViscosity={0.8}
                 className="map-container"
               >
+                <FocusOnSelectedState state={selectedState} />
                 <FitBounds fires={filteredFires} />
                 <FocusOnSelectedFire fire={selectedFire} />
                 <TileLayer

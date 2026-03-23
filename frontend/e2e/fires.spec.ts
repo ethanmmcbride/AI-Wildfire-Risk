@@ -8,20 +8,20 @@ test.describe("AI Wildfire Tracker E2E", () => {
     await expect(page.locator(".error-banner")).toHaveCount(0);
   });
 
-  test("starts with California-only filter enabled", async ({ page }) => {
+  test("starts with California state selected", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await expect(page.getByTestId("ca-toggle")).toBeChecked();
+    await expect(page.getByTestId("state-select")).toHaveValue("ca");
     await expect(page.getByTestId("events-count")).toHaveText("3 events");
     await expect(page.getByText("Lat/Lon: 31.00, -100.00")).toHaveCount(0);
   });
 
-  test("expands result set when California-only is turned off", async ({ page }) => {
+  test("expands result set when switching to US (All States)", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId("events-count")).toHaveText("3 events");
-    await page.getByTestId("ca-toggle").uncheck();
-    await expect(page.getByTestId("ca-toggle")).not.toBeChecked();
+    await page.getByTestId("state-select").selectOption("us");
+    await expect(page.getByTestId("state-select")).toHaveValue("us");
     await expect(page.getByTestId("events-count")).toHaveText("5 events");
     await expect(page.getByText("Lat/Lon: 31.00, -100.00")).toBeVisible();
   });
@@ -29,8 +29,8 @@ test.describe("AI Wildfire Tracker E2E", () => {
   test("applies confidence filter and FRP ascending sort", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await page.getByTestId("ca-toggle").uncheck();
-    await expect(page.getByTestId("ca-toggle")).not.toBeChecked();
+    await page.getByTestId("state-select").selectOption("us");
+    await expect(page.getByTestId("state-select")).toHaveValue("us");
     await expect(page.getByTestId("events-count")).toHaveText("5 events");
 
     await page.getByTestId("confidence-filter").selectOption("high");
