@@ -127,6 +127,10 @@ jobs:
         env:
           PYTHONPATH: ai/src
         run: pytest ai/src/ai_wildfire/tests/ -v
+      - name: Smoke compile AI package
+        env:
+          PYTHONPATH: ai/src
+        run: python -m compileall ai/src/ai_wildfire
 
   test-e2e:
     needs: changes
