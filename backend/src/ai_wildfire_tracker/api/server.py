@@ -1,4 +1,4 @@
-#Spirnt 2 Resubmission
+# Spirnt 2 Resubmission
 import logging
 import os
 
