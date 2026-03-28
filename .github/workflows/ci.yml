@@ -153,7 +153,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run End-to-End Tests
         run: npm run test:e2e:ci
-#Resubmission for Sprint 2
+#Resubmission for Sprint 2 : Tompaheton Phu aded Security Scan: lines 155-171
   security-scan:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
