@@ -1,4 +1,4 @@
-# Spirnt 2 Resubmission: Tomphaeton Phu: added unhandled api paramter (reigon): Line 69 -74
+# Sprint 2 Resubmission: Tomphaeton Phu: aded unhandled api parameter (region): Lines 69 - 74
 import logging
 import os
 
@@ -67,10 +67,10 @@ def get_fires(
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
     valid_regions = ["ca", "us", None]
-    if region is not None and region.lower() not in valid_regions:
+    if region and region.lower() not in valid_regions:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid region '{region}'. Must be one of: ca, us",
+            detail=f"Invalid region parameter: {region}. Valid options are: {valid_regions}",
         )
 
     if not os.path.exists(DB_PATH):

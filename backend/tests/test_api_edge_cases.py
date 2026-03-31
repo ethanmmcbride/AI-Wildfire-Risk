@@ -1,4 +1,4 @@
-# Resubmission for Sprint 2 = Tomphaeton Phu: added Lines 58 - 104 and 188 - 237
+#Resubmission for sprint 2 : Tomphaeton Phu: added lines 58 - 104 and 188 - 237
 import importlib
 import os
 
@@ -55,8 +55,8 @@ def test_get_fires_returns_empty_list_when_table_missing(client):
     assert response.json() == []
 
 
-def test_api_rejects_invalid_region_parameter(client):
-    response = client.get("/fires?region=mars")
+def test_api_rejecdts_invalid_region_parameter(client):
+    response = client.get("/fires?region=invalid_region")
     assert response.status_code == 400
 
     data = response.json()

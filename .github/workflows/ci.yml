@@ -153,10 +153,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run End-to-End Tests
         run: npm run test:e2e:ci
-#Resubmission for Sprint 2 : Tompaheton Phu aded Security Scan: lines 157-171
+#Resubmission for Spring 2 : Tomphaeton Phu added Security Scan: lines 157-171
   security-scan:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.ai == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -166,5 +166,5 @@ jobs:
           python-version: "3.12"
       - name: Install Bandit
         run: pip install bandit
-      - name: Run Bandit on Backend Source
-        run: bandit -r backend/src/ -ll
+      - name: Run Bandit on AI Source
+        run: bandit -r ai/src/ -ll

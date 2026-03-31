@@ -359,7 +359,7 @@ export default function App() {
               </MapContainer>
             </>
           )}
-        </section>
+        </section>w
 
         <aside className="events-panel">
           <h3>Events</h3>
