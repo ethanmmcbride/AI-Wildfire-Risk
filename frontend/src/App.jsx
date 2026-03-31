@@ -299,7 +299,7 @@ export default function App() {
             <li>Marker radius scales with FRP (higher FRP = larger marker)</li>
           </ul>
         </section>
-#Resubmission for sprint 2
+#Resubmission for sprint 2: Tomphaeton added UI for when backend is not running: Lines 303 - 362
 <section className="map-panel">
           {err ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#1e293b', color: '#f87171', padding: '40px', textAlign: 'center', borderRadius: '8px' }}>
