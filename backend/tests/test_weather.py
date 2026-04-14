@@ -1,18 +1,3 @@
-"""
-test_weather.py — pytest tests for the NWS weather ingestor
-backend/tests/test_weather.py
-
-Test methodology: unit tests with mocked HTTP calls and an in-memory DuckDB
-instance. No live NWS API calls are made. Tests are deterministic and fast.
-
-Coverage:
-    - NWS gridpoint resolution (success + failure paths)
-    - Forecast fetch (success + failure paths)
-    - Condition extraction (mph→km/h conversion, humidity parsing, temp conversion)
-    - Dedup: already-fetched points are skipped
-    - ingest_weather(): full happy path and no-fires-table path
-"""
-
 import os
 from datetime import datetime, timezone
 from unittest.mock import patch
