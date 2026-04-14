@@ -15,6 +15,7 @@ from ai_wildfire_tracker.ingest.weather import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def mem_db(tmp_path):
     """Create a temp DuckDB database with a seeded fires table."""
@@ -63,6 +64,7 @@ NWS_FORECAST_PROPS = {
 # Unit tests: get_nws_gridpoint
 # ---------------------------------------------------------------------------
 
+
 class TestGetNwsGridpoint:
     def test_returns_tuple_on_success(self):
         with patch("ai_wildfire_tracker.ingest.weather._nws_get", return_value=NWS_POINTS_RESPONSE):
@@ -84,10 +86,13 @@ class TestGetNwsGridpoint:
 # Unit tests: _extract_current_conditions
 # ---------------------------------------------------------------------------
 
+
 class TestExtractCurrentConditions:
     def test_mph_to_kmh_conversion(self):
         props = {
-            "periods": [{"windSpeed": "10 mph", "temperature": 32, "relativeHumidity": {"value": 50}}]
+            "periods": [
+                {"windSpeed": "10 mph", "temperature": 32, "relativeHumidity": {"value": 50}}
+            ]
         }
         result = _extract_current_conditions(props)
         assert result is not None
@@ -95,7 +100,9 @@ class TestExtractCurrentConditions:
 
     def test_kmh_wind_passthrough(self):
         props = {
-            "periods": [{"windSpeed": "20 km/h", "temperature": 68, "relativeHumidity": {"value": 30}}]
+            "periods": [
+                {"windSpeed": "20 km/h", "temperature": 68, "relativeHumidity": {"value": 30}}
+            ]
         }
         result = _extract_current_conditions(props)
         assert result["wind_speed_kmh"] == 20.0
@@ -109,7 +116,9 @@ class TestExtractCurrentConditions:
 
     def test_humidity_extracted(self):
         props = {
-            "periods": [{"windSpeed": "5 mph", "temperature": 60, "relativeHumidity": {"value": 65}}]
+            "periods": [
+                {"windSpeed": "5 mph", "temperature": 60, "relativeHumidity": {"value": 65}}
+            ]
         }
         result = _extract_current_conditions(props)
         assert result["humidity_pct"] == 65.0
@@ -128,12 +137,19 @@ class TestExtractCurrentConditions:
 # Integration tests: ingest_weather with temp DB
 # ---------------------------------------------------------------------------
 
+
 class TestIngestWeather:
     def test_inserts_weather_rows(self, mem_db):
         with (
             patch("ai_wildfire_tracker.ingest.weather.DB_PATH", mem_db),
-            patch("ai_wildfire_tracker.ingest.weather.get_nws_gridpoint", return_value=("MTR", "84", "105")),
-            patch("ai_wildfire_tracker.ingest.weather.get_nws_forecast", return_value=NWS_FORECAST_PROPS),
+            patch(
+                "ai_wildfire_tracker.ingest.weather.get_nws_gridpoint",
+                return_value=("MTR", "84", "105"),
+            ),
+            patch(
+                "ai_wildfire_tracker.ingest.weather.get_nws_forecast",
+                return_value=NWS_FORECAST_PROPS,
+            ),
             patch("ai_wildfire_tracker.ingest.weather.time.sleep"),
         ):
             inserted = ingest_weather(limit=5)
@@ -157,8 +173,14 @@ class TestIngestWeather:
 
         with (
             patch("ai_wildfire_tracker.ingest.weather.DB_PATH", mem_db),
-            patch("ai_wildfire_tracker.ingest.weather.get_nws_gridpoint", return_value=("MTR", "84", "105")),
-            patch("ai_wildfire_tracker.ingest.weather.get_nws_forecast", return_value=NWS_FORECAST_PROPS),
+            patch(
+                "ai_wildfire_tracker.ingest.weather.get_nws_gridpoint",
+                return_value=("MTR", "84", "105"),
+            ),
+            patch(
+                "ai_wildfire_tracker.ingest.weather.get_nws_forecast",
+                return_value=NWS_FORECAST_PROPS,
+            ),
             patch("ai_wildfire_tracker.ingest.weather.time.sleep"),
         ):
             inserted = ingest_weather(limit=5)
@@ -178,7 +200,10 @@ class TestIngestWeather:
     def test_missing_db_raises(self, tmp_path):
         missing = str(tmp_path / "nonexistent.db")
 
-        with patch("ai_wildfire_tracker.ingest.weather.DB_PATH", missing), pytest.raises(FileNotFoundError):
+        with (
+            patch("ai_wildfire_tracker.ingest.weather.DB_PATH", missing),
+            pytest.raises(FileNotFoundError),
+        ):
             ingest_weather()
 
     def test_offshore_point_skipped(self, mem_db):

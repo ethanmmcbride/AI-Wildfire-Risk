@@ -33,9 +33,7 @@ load_dotenv()
 DB_PATH = os.getenv("DB_PATH", "wildfire.db")
 # NWS requires a User-Agent header identifying your app + contact email.
 # Set NWS_USER_AGENT="ai-wildfire-tracker/1.0 (your@email.com)" in .env
-NWS_USER_AGENT = os.getenv(
-    "NWS_USER_AGENT", "ai-wildfire-tracker/1.0 (contact@example.com)"
-)
+NWS_USER_AGENT = os.getenv("NWS_USER_AGENT", "ai-wildfire-tracker/1.0 (contact@example.com)")
 # Seconds to wait between NWS calls to respect their rate limits (~1 req/sec)
 NWS_RATE_LIMIT_SLEEP = float(os.getenv("NWS_RATE_LIMIT_SLEEP", "1.1"))
 # How many unique grid cells to fetch per run (each cell = 1 NWS API call)
@@ -58,6 +56,7 @@ SESSION.headers.update({"User-Agent": NWS_USER_AGENT, "Accept": "application/geo
 # Schema
 # ---------------------------------------------------------------------------
 
+
 def ensure_weather_table(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(
         """
@@ -77,6 +76,7 @@ def ensure_weather_table(con: duckdb.DuckDBPyConnection) -> None:
 # ---------------------------------------------------------------------------
 # NWS API helpers
 # ---------------------------------------------------------------------------
+
 
 def _nws_get(url: str) -> dict | None:
     """GET a NWS endpoint, return parsed JSON or None on failure."""
@@ -155,7 +155,10 @@ def _extract_current_conditions(props: dict) -> dict | None:
 # Dedup: skip grid cells already fetched today
 # ---------------------------------------------------------------------------
 
-def _already_fetched_today(con: duckdb.DuckDBPyConnection, lat: float, lon: float, today: str) -> bool:
+
+def _already_fetched_today(
+    con: duckdb.DuckDBPyConnection, lat: float, lon: float, today: str
+) -> bool:
     try:
         result = con.execute(
             """
@@ -172,6 +175,7 @@ def _already_fetched_today(con: duckdb.DuckDBPyConnection, lat: float, lon: floa
 # ---------------------------------------------------------------------------
 # Public ingest function
 # ---------------------------------------------------------------------------
+
 
 def ingest_weather(limit: int = NWS_MAX_POINTS) -> int:
     """
@@ -202,9 +206,13 @@ def ingest_weather(limit: int = NWS_MAX_POINTS) -> int:
             ORDER BY lat DESC
             LIMIT ?
             """,
-            [US_BOUNDS["min_lat"], US_BOUNDS["max_lat"],
-            US_BOUNDS["min_lon"], US_BOUNDS["max_lon"],
-            int(limit)]
+            [
+                US_BOUNDS["min_lat"],
+                US_BOUNDS["max_lat"],
+                US_BOUNDS["min_lon"],
+                US_BOUNDS["max_lon"],
+                int(limit),
+            ],
         ).df()
     except duckdb.CatalogException:
         logger.warning("fires table does not exist yet — run FIRMS ingest first")
@@ -257,7 +265,8 @@ def ingest_weather(limit: int = NWS_MAX_POINTS) -> int:
         )
         logger.info(
             "Fetched %.2f,%.2f → wind=%.1f km/h  hum=%.0f%%  temp=%.1f°C",
-            lat, lon,
+            lat,
+            lon,
             conditions["wind_speed_kmh"],
             conditions["humidity_pct"],
             conditions["temp_c"],
@@ -265,7 +274,7 @@ def ingest_weather(limit: int = NWS_MAX_POINTS) -> int:
         time.sleep(NWS_RATE_LIMIT_SLEEP)
 
     if rows:
-        weather_df = pd.DataFrame(rows) # noqa: F841 — DuckDB references this by name
+        weather_df = pd.DataFrame(rows)  # noqa: F841 — DuckDB references this by name
         con.execute("INSERT INTO weather_observations SELECT * FROM weather_df")
         logger.info("Inserted %d weather rows into %s", len(rows), DB_PATH)
     else:
