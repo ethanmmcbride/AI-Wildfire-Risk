@@ -1,0 +1,2495 @@
+{
+  "created": 1776155459.6307983,
+  "duration": 3.3467068672180176,
+  "exitcode": 0,
+  "root": "/home/tofut/dev/school/cpsc491/d_sprint3/AI-Wildfire-Risk/backend",
+  "environment": {},
+  "summary": {
+    "passed": 68,
+    "total": 69,
+    "collected": 69,
+    "failed": 1
+  },
+  "collectors": [
+    {
+      "nodeid": "",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests",
+          "type": "Dir"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestClient",
+      "outcome": "passed",
+      "result": []
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline::test_records_written_to_db_appear_in_api_response",
+          "type": "Function",
+          "lineno": 81
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline::test_out_of_bounds_record_excluded_end_to_end",
+          "type": "Function",
+          "lineno": 92
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline::test_data_persists_across_connections",
+          "type": "Function",
+          "lineno": 102
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_confidence_high_filter_returns_correct_records",
+          "type": "Function",
+          "lineno": 121
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_confidence_low_filter_returns_correct_records",
+          "type": "Function",
+          "lineno": 133
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_region_ca_filter_excludes_non_california_records",
+          "type": "Function",
+          "lineno": 143
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_combined_region_and_confidence_filter",
+          "type": "Function",
+          "lineno": 154
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestRiskScoringIntegration",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration/test_integration.py::TestRiskScoringIntegration::test_risk_score_is_computed_for_all_records",
+          "type": "Function",
+          "lineno": 168
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestRiskScoringIntegration::test_risk_score_formula_correctness",
+          "type": "Function",
+          "lineno": 178
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestOrderingIntegration",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration/test_integration.py::TestOrderingIntegration::test_fires_ordered_by_date_desc_then_time_desc",
+          "type": "Function",
+          "lineno": 197
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration/test_integration.py::TestClient",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestRiskScoringIntegration",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/integration/test_integration.py::TestOrderingIntegration",
+          "type": "Class"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/integration",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration/test_integration.py",
+          "type": "Module"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestClient",
+      "outcome": "passed",
+      "result": []
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_endpoint_responds_under_500ms",
+          "type": "Function",
+          "lineno": 102
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_region_filter_responds_under_500ms",
+          "type": "Function",
+          "lineno": 110
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_confidence_filter_responds_under_500ms",
+          "type": "Function",
+          "lineno": 118
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_combined_filter_responds_under_500ms",
+          "type": "Function",
+          "lineno": 126
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_endpoint_consistent_across_repeated_calls",
+          "type": "Function",
+          "lineno": 134
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestHealthEndpointSLA",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/performance/test_performance.py::TestHealthEndpointSLA::test_health_endpoint_responds_under_100ms",
+          "type": "Function",
+          "lineno": 148
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestHealthEndpointSLA::test_health_endpoint_consistent_across_repeated_calls",
+          "type": "Function",
+          "lineno": 156
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/performance/test_performance.py::TestClient",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/performance/test_performance.py::TestHealthEndpointSLA",
+          "type": "Class"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/performance",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/performance/test_performance.py",
+          "type": "Module"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestClient",
+      "outcome": "passed",
+      "result": []
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestSQLInjection",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py::TestSQLInjection::test_sql_injection_in_region_param",
+          "type": "Function",
+          "lineno": 75
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestSQLInjection::test_sql_injection_union_in_region_param",
+          "type": "Function",
+          "lineno": 86
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestSQLInjection::test_sql_injection_in_confidence_param",
+          "type": "Function",
+          "lineno": 95
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestSQLInjection::test_table_still_intact_after_injection_attempt",
+          "type": "Function",
+          "lineno": 106
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestXSSProbes",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py::TestXSSProbes::test_xss_script_tag_in_region_param",
+          "type": "Function",
+          "lineno": 120
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestXSSProbes::test_xss_event_handler_in_region_param",
+          "type": "Function",
+          "lineno": 129
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestOversizedInput",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py::TestOversizedInput::test_oversized_region_param_rejected",
+          "type": "Function",
+          "lineno": 140
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestOversizedInput::test_oversized_confidence_param_rejected",
+          "type": "Function",
+          "lineno": 149
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks::test_southern_hemisphere_data_excluded",
+          "type": "Function",
+          "lineno": 160
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks::test_eastern_hemisphere_data_excluded",
+          "type": "Function",
+          "lineno": 172
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks::test_invalid_region_code_rejected",
+          "type": "Function",
+          "lineno": 184
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestInformationDisclosure",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py::TestInformationDisclosure::test_health_response_returns_expected_fields_only",
+          "type": "Function",
+          "lineno": 195
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestInformationDisclosure::test_400_error_does_not_expose_stack_trace",
+          "type": "Function",
+          "lineno": 208
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestInformationDisclosure::test_confidence_400_error_has_helpful_message",
+          "type": "Function",
+          "lineno": 219
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security/test_security.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py::TestClient",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestSQLInjection",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestXSSProbes",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestOversizedInput",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/security/test_security.py::TestInformationDisclosure",
+          "type": "Class"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/security",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/security/test_security.py",
+          "type": "Module"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_api.py::TestClient",
+      "outcome": "passed",
+      "result": []
+    },
+    {
+      "nodeid": "tests/test_api.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_api.py::TestClient",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/test_api.py::test_root_endpoint",
+          "type": "Function",
+          "lineno": 62
+        },
+        {
+          "nodeid": "tests/test_api.py::test_health_endpoint",
+          "type": "Function",
+          "lineno": 69
+        },
+        {
+          "nodeid": "tests/test_api.py::test_get_fires_returns_us_data_only",
+          "type": "Function",
+          "lineno": 78
+        },
+        {
+          "nodeid": "tests/test_api.py::test_get_fires_confidence_high",
+          "type": "Function",
+          "lineno": 91
+        },
+        {
+          "nodeid": "tests/test_api.py::test_get_fires_region_ca",
+          "type": "Function",
+          "lineno": 101
+        },
+        {
+          "nodeid": "tests/test_api.py::test_get_fires_region_ca_and_confidence_high",
+          "type": "Function",
+          "lineno": 112
+        },
+        {
+          "nodeid": "tests/test_api.py::test_invalid_region_returns_400",
+          "type": "Function",
+          "lineno": 121
+        },
+        {
+          "nodeid": "tests/test_api.py::test_fire_has_expected_fields",
+          "type": "Function",
+          "lineno": 128
+        },
+        {
+          "nodeid": "tests/test_api.py::test_risk_score_is_numeric",
+          "type": "Function",
+          "lineno": 146
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::TestClient",
+      "outcome": "passed",
+      "result": []
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_api_edge_cases.py::TestClient",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_get_fires_returns_empty_list_when_db_missing",
+          "type": "Function",
+          "lineno": 41
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_get_fires_returns_empty_list_when_table_missing",
+          "type": "Function",
+          "lineno": 47
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_api_rejects_invalid_region_parameter",
+          "type": "Function",
+          "lineno": 56
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_api_accepts_valid_region_parameter",
+          "type": "Function",
+          "lineno": 64
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_region_us_returns_only_us_records",
+          "type": "Function",
+          "lineno": 105
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_confidence_filter_with_no_matches_returns_empty_list",
+          "type": "Function",
+          "lineno": 149
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_api_sqli_defense",
+          "type": "Function",
+          "lineno": 186
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_health_check_endpoint",
+          "type": "Function",
+          "lineno": 226
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py::test_compute_risk_logic_boundaries",
+          "type": "Function",
+          "lineno": 232
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_with_datetime_column",
+          "type": "Function",
+          "lineno": 7
+        },
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_with_yearday_column",
+          "type": "Function",
+          "lineno": 41
+        },
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_filters_out_of_bounds_rows",
+          "type": "Function",
+          "lineno": 66
+        },
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_requires_lat_lon",
+          "type": "Function",
+          "lineno": 85
+        },
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py::test_ingest_noaa_hms_inserts_normalized_rows",
+          "type": "Function",
+          "lineno": 98
+        },
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py::test_ingest_noaa_hms_requires_url",
+          "type": "Function",
+          "lineno": 137
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestGetNwsGridpoint",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_weather.py::TestGetNwsGridpoint::test_returns_tuple_on_success",
+          "type": "Function",
+          "lineno": 68
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestGetNwsGridpoint::test_returns_none_on_api_failure",
+          "type": "Function",
+          "lineno": 73
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestGetNwsGridpoint::test_returns_none_on_malformed_response",
+          "type": "Function",
+          "lineno": 78
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_mph_to_kmh_conversion",
+          "type": "Function",
+          "lineno": 90
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_kmh_wind_passthrough",
+          "type": "Function",
+          "lineno": 100
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_fahrenheit_to_celsius_conversion",
+          "type": "Function",
+          "lineno": 109
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_humidity_extracted",
+          "type": "Function",
+          "lineno": 116
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_empty_periods_returns_none",
+          "type": "Function",
+          "lineno": 125
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_missing_humidity_defaults_to_zero",
+          "type": "Function",
+          "lineno": 129
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestIngestWeather",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_weather.py::TestIngestWeather::test_inserts_weather_rows",
+          "type": "Function",
+          "lineno": 141
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestIngestWeather::test_skips_already_fetched_today",
+          "type": "Function",
+          "lineno": 163
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestIngestWeather::test_no_fires_table_returns_zero",
+          "type": "Function",
+          "lineno": 190
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestIngestWeather::test_missing_db_raises",
+          "type": "Function",
+          "lineno": 199
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestIngestWeather::test_offshore_point_skipped",
+          "type": "Function",
+          "lineno": 208
+        }
+      ]
+    },
+    {
+      "nodeid": "tests/test_weather.py",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/test_weather.py::TestGetNwsGridpoint",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestExtractCurrentConditions",
+          "type": "Class"
+        },
+        {
+          "nodeid": "tests/test_weather.py::TestIngestWeather",
+          "type": "Class"
+        }
+      ]
+    },
+    {
+      "nodeid": "tests",
+      "outcome": "passed",
+      "result": [
+        {
+          "nodeid": "tests/integration",
+          "type": "Package"
+        },
+        {
+          "nodeid": "tests/performance",
+          "type": "Package"
+        },
+        {
+          "nodeid": "tests/security",
+          "type": "Package"
+        },
+        {
+          "nodeid": "tests/test_api.py",
+          "type": "Module"
+        },
+        {
+          "nodeid": "tests/test_api_edge_cases.py",
+          "type": "Module"
+        },
+        {
+          "nodeid": "tests/test_ingest_noaa_hms.py",
+          "type": "Module"
+        },
+        {
+          "nodeid": "tests/test_weather.py",
+          "type": "Module"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline::test_records_written_to_db_appear_in_api_response",
+      "lineno": 81,
+      "outcome": "passed",
+      "keywords": [
+        "test_records_written_to_db_appear_in_api_response",
+        "TestWriteThenReadPipeline",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.044829118000052404,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01880907600025239,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00024727399977564346,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline::test_out_of_bounds_record_excluded_end_to_end",
+      "lineno": 92,
+      "outcome": "passed",
+      "keywords": [
+        "test_out_of_bounds_record_excluded_end_to_end",
+        "TestWriteThenReadPipeline",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.028946687998541165,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.013691301999642747,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00022663100025965832,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestWriteThenReadPipeline::test_data_persists_across_connections",
+      "lineno": 102,
+      "outcome": "passed",
+      "keywords": [
+        "test_data_persists_across_connections",
+        "TestWriteThenReadPipeline",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02922571100134519,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.03462906299864699,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002443980010866653,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_confidence_high_filter_returns_correct_records",
+      "lineno": 121,
+      "outcome": "passed",
+      "keywords": [
+        "test_confidence_high_filter_returns_correct_records",
+        "TestFilterAccuracyIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.025535077000313322,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01476115199875494,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002115219995175721,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_confidence_low_filter_returns_correct_records",
+      "lineno": 133,
+      "outcome": "passed",
+      "keywords": [
+        "test_confidence_low_filter_returns_correct_records",
+        "TestFilterAccuracyIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.027879449000465684,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011076341001171386,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002228639987151837,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_region_ca_filter_excludes_non_california_records",
+      "lineno": 143,
+      "outcome": "passed",
+      "keywords": [
+        "test_region_ca_filter_excludes_non_california_records",
+        "TestFilterAccuracyIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.027725648000341607,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011455425999884028,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002180780011258321,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestFilterAccuracyIntegration::test_combined_region_and_confidence_filter",
+      "lineno": 154,
+      "outcome": "passed",
+      "keywords": [
+        "test_combined_region_and_confidence_filter",
+        "TestFilterAccuracyIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.028437949000363005,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011562358000446693,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00022164800066093449,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestRiskScoringIntegration::test_risk_score_is_computed_for_all_records",
+      "lineno": 168,
+      "outcome": "passed",
+      "keywords": [
+        "test_risk_score_is_computed_for_all_records",
+        "TestRiskScoringIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.027617036999799893,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01139408699964406,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00023420700017595664,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestRiskScoringIntegration::test_risk_score_formula_correctness",
+      "lineno": 178,
+      "outcome": "passed",
+      "keywords": [
+        "test_risk_score_formula_correctness",
+        "TestRiskScoringIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.027159887000379968,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.010834511000211933,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00022045399964554235,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/integration/test_integration.py::TestOrderingIntegration::test_fires_ordered_by_date_desc_then_time_desc",
+      "lineno": 197,
+      "outcome": "passed",
+      "keywords": [
+        "test_fires_ordered_by_date_desc_then_time_desc",
+        "TestOrderingIntegration",
+        "test_integration.py",
+        "integration",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.026986025000951486,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011964690000240807,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00024876099996617995,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_endpoint_responds_under_500ms",
+      "lineno": 102,
+      "outcome": "passed",
+      "keywords": [
+        "test_fires_endpoint_responds_under_500ms",
+        "TestFiresEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.11763892300041334,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.012483941998652881,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002763299999060109,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_region_filter_responds_under_500ms",
+      "lineno": 110,
+      "outcome": "passed",
+      "keywords": [
+        "test_fires_region_filter_responds_under_500ms",
+        "TestFiresEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.11714798899993184,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01206742200156441,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002355190008529462,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_confidence_filter_responds_under_500ms",
+      "lineno": 118,
+      "outcome": "passed",
+      "keywords": [
+        "test_fires_confidence_filter_responds_under_500ms",
+        "TestFiresEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.12071130399999674,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011850503000459867,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00024490900068485644,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_combined_filter_responds_under_500ms",
+      "lineno": 126,
+      "outcome": "passed",
+      "keywords": [
+        "test_fires_combined_filter_responds_under_500ms",
+        "TestFiresEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.11927820799974143,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011643802999969921,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00024291100089612883,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestFiresEndpointSLA::test_fires_endpoint_consistent_across_repeated_calls",
+      "lineno": 134,
+      "outcome": "passed",
+      "keywords": [
+        "test_fires_endpoint_consistent_across_repeated_calls",
+        "TestFiresEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.11689333300091675,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.05683993500133511,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002651509985298617,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestHealthEndpointSLA::test_health_endpoint_responds_under_100ms",
+      "lineno": 148,
+      "outcome": "passed",
+      "keywords": [
+        "test_health_endpoint_responds_under_100ms",
+        "TestHealthEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.11787923600059003,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0028876829983346397,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00024105500051518902,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/performance/test_performance.py::TestHealthEndpointSLA::test_health_endpoint_consistent_across_repeated_calls",
+      "lineno": 156,
+      "outcome": "failed",
+      "keywords": [
+        "test_health_endpoint_consistent_across_repeated_calls",
+        "TestHealthEndpointSLA",
+        "test_performance.py",
+        "performance",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.11833303999992495,
+        "outcome": "passed"
+      },
+      "call": {
+        "status": "failed",
+        "duration": 0.011865226999361767,
+        "longrepr": "AssertionError: simulated regression \u2014 see build 003-c7d8e9f"
+      },
+      "teardown": {
+        "duration": 0.00023942699954204727,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestSQLInjection::test_sql_injection_in_region_param",
+      "lineno": 75,
+      "outcome": "passed",
+      "keywords": [
+        "test_sql_injection_in_region_param",
+        "TestSQLInjection",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02245807299914304,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0025127520002570236,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00022032499873603228,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestSQLInjection::test_sql_injection_union_in_region_param",
+      "lineno": 86,
+      "outcome": "passed",
+      "keywords": [
+        "test_sql_injection_union_in_region_param",
+        "TestSQLInjection",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.021368564001022605,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0024245419990620576,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021554799968726002,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestSQLInjection::test_sql_injection_in_confidence_param",
+      "lineno": 95,
+      "outcome": "passed",
+      "keywords": [
+        "test_sql_injection_in_confidence_param",
+        "TestSQLInjection",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020306984999479027,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002407079000477097,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00022022699886292685,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestSQLInjection::test_table_still_intact_after_injection_attempt",
+      "lineno": 106,
+      "outcome": "passed",
+      "keywords": [
+        "test_table_still_intact_after_injection_attempt",
+        "TestSQLInjection",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02116389099865046,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.015169854999840027,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002198470010625897,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestXSSProbes::test_xss_script_tag_in_region_param",
+      "lineno": 120,
+      "outcome": "passed",
+      "keywords": [
+        "test_xss_script_tag_in_region_param",
+        "TestXSSProbes",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.021050081000794307,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002461054999002954,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021505999939108733,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestXSSProbes::test_xss_event_handler_in_region_param",
+      "lineno": 129,
+      "outcome": "passed",
+      "keywords": [
+        "test_xss_event_handler_in_region_param",
+        "TestXSSProbes",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020166010999673745,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002319748000445543,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002213769985246472,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestOversizedInput::test_oversized_region_param_rejected",
+      "lineno": 140,
+      "outcome": "passed",
+      "keywords": [
+        "test_oversized_region_param_rejected",
+        "TestOversizedInput",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02087007499903848,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0026037190000351984,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021987899890518747,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestOversizedInput::test_oversized_confidence_param_rejected",
+      "lineno": 149,
+      "outcome": "passed",
+      "keywords": [
+        "test_oversized_confidence_param_rejected",
+        "TestOversizedInput",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02118367899856821,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002317131000381778,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00022219099992071278,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks::test_southern_hemisphere_data_excluded",
+      "lineno": 160,
+      "outcome": "passed",
+      "keywords": [
+        "test_southern_hemisphere_data_excluded",
+        "TestBoundaryValueAttacks",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02102389799983939,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.010640584001521347,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021586399998341221,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks::test_eastern_hemisphere_data_excluded",
+      "lineno": 172,
+      "outcome": "passed",
+      "keywords": [
+        "test_eastern_hemisphere_data_excluded",
+        "TestBoundaryValueAttacks",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020670655998401344,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011716816999978619,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021663400002580602,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestBoundaryValueAttacks::test_invalid_region_code_rejected",
+      "lineno": 184,
+      "outcome": "passed",
+      "keywords": [
+        "test_invalid_region_code_rejected",
+        "TestBoundaryValueAttacks",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020505599999523838,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002235988000393263,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021750199994130526,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestInformationDisclosure::test_health_response_returns_expected_fields_only",
+      "lineno": 195,
+      "outcome": "passed",
+      "keywords": [
+        "test_health_response_returns_expected_fields_only",
+        "TestInformationDisclosure",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02086161999977776,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0021612259988614824,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021972699869365897,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestInformationDisclosure::test_400_error_does_not_expose_stack_trace",
+      "lineno": 208,
+      "outcome": "passed",
+      "keywords": [
+        "test_400_error_does_not_expose_stack_trace",
+        "TestInformationDisclosure",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.022837287999209366,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002728582001509494,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002559139993536519,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/security/test_security.py::TestInformationDisclosure::test_confidence_400_error_has_helpful_message",
+      "lineno": 219,
+      "outcome": "passed",
+      "keywords": [
+        "test_confidence_400_error_has_helpful_message",
+        "TestInformationDisclosure",
+        "test_security.py",
+        "security",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02015657099946111,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002575357000750955,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002185440007451689,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_root_endpoint",
+      "lineno": 62,
+      "outcome": "passed",
+      "keywords": [
+        "test_root_endpoint",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02409099499891454,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0024931719999585766,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00020020100055262446,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_health_endpoint",
+      "lineno": 69,
+      "outcome": "passed",
+      "keywords": [
+        "test_health_endpoint",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.024761169999692356,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002420961000098032,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.000217111999518238,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_get_fires_returns_us_data_only",
+      "lineno": 78,
+      "outcome": "passed",
+      "keywords": [
+        "test_get_fires_returns_us_data_only",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.024675434999153367,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01100496899925929,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002029150000453228,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_get_fires_confidence_high",
+      "lineno": 91,
+      "outcome": "passed",
+      "keywords": [
+        "test_get_fires_confidence_high",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.023836310001570382,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.011942178000026615,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00020350100021460094,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_get_fires_region_ca",
+      "lineno": 101,
+      "outcome": "passed",
+      "keywords": [
+        "test_get_fires_region_ca",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.025290310000855243,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01083448600002157,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00020994799888285343,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_get_fires_region_ca_and_confidence_high",
+      "lineno": 112,
+      "outcome": "passed",
+      "keywords": [
+        "test_get_fires_region_ca_and_confidence_high",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02732416900107637,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.01074436999988393,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00020011400010844227,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_invalid_region_returns_400",
+      "lineno": 121,
+      "outcome": "passed",
+      "keywords": [
+        "test_invalid_region_returns_400",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.025012025000251015,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002995578999616555,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00020329400103946682,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_fire_has_expected_fields",
+      "lineno": 128,
+      "outcome": "passed",
+      "keywords": [
+        "test_fire_has_expected_fields",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.025675505999970483,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.010553588999755448,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00019980999968538526,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api.py::test_risk_score_is_numeric",
+      "lineno": 146,
+      "outcome": "passed",
+      "keywords": [
+        "test_risk_score_is_numeric",
+        "test_api.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.02510899499975494,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.010592697000902263,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002190650011471007,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_get_fires_returns_empty_list_when_db_missing",
+      "lineno": 41,
+      "outcome": "passed",
+      "keywords": [
+        "test_get_fires_returns_empty_list_when_db_missing",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0019972339996456867,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0033737740013748407,
+        "outcome": "passed",
+        "log": [
+          {
+            "name": "ai_wildfire_tracker.api.server",
+            "msg": "Database file does not exist: test_wildfire_edge.db",
+            "args": null,
+            "levelname": "WARNING",
+            "levelno": 30,
+            "pathname": "/home/tofut/dev/school/cpsc491/d_sprint3/AI-Wildfire-Risk/backend/src/ai_wildfire_tracker/api/server.py",
+            "filename": "server.py",
+            "module": "server",
+            "exc_info": null,
+            "exc_text": null,
+            "stack_info": null,
+            "lineno": 84,
+            "funcName": "get_fires",
+            "created": 1776241756.2413723,
+            "msecs": 241.0,
+            "relativeCreated": 3040.4412746429443,
+            "thread": 123318057276992,
+            "threadName": "AnyIO worker thread",
+            "processName": "MainProcess",
+            "process": 42336
+          }
+        ]
+      },
+      "teardown": {
+        "duration": 0.00010894100159930531,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_get_fires_returns_empty_list_when_table_missing",
+      "lineno": 47,
+      "outcome": "passed",
+      "keywords": [
+        "test_get_fires_returns_empty_list_when_table_missing",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0011976240002695704,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.026007245998698636,
+        "outcome": "passed",
+        "log": [
+          {
+            "name": "ai_wildfire_tracker.api.server",
+            "msg": "Table 'fires' does not exist yet",
+            "args": null,
+            "levelname": "WARNING",
+            "levelno": 30,
+            "pathname": "/home/tofut/dev/school/cpsc491/d_sprint3/AI-Wildfire-Risk/backend/src/ai_wildfire_tracker/api/server.py",
+            "filename": "server.py",
+            "module": "server",
+            "exc_info": null,
+            "exc_text": null,
+            "stack_info": null,
+            "lineno": 139,
+            "funcName": "get_fires",
+            "created": 1776241756.267753,
+            "msecs": 267.0,
+            "relativeCreated": 3066.821813583374,
+            "thread": 123318040491584,
+            "threadName": "AnyIO worker thread",
+            "processName": "MainProcess",
+            "process": 42336
+          }
+        ]
+      },
+      "teardown": {
+        "duration": 0.00018128299961972516,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_api_rejects_invalid_region_parameter",
+      "lineno": 56,
+      "outcome": "passed",
+      "keywords": [
+        "test_api_rejects_invalid_region_parameter",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0014518230000248877,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.003522771999996621,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00011030799942091107,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_api_accepts_valid_region_parameter",
+      "lineno": 64,
+      "outcome": "passed",
+      "keywords": [
+        "test_api_accepts_valid_region_parameter",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0012000329988950398,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.03851732300063304,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002268250009365147,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_region_us_returns_only_us_records",
+      "lineno": 105,
+      "outcome": "passed",
+      "keywords": [
+        "test_region_us_returns_only_us_records",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.001486686000134796,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.038484493999931146,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00021129400010977406,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_confidence_filter_with_no_matches_returns_empty_list",
+      "lineno": 149,
+      "outcome": "passed",
+      "keywords": [
+        "test_confidence_filter_with_no_matches_returns_empty_list",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.001620457000171882,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.03289941399998497,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002949230001831893,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_api_sqli_defense",
+      "lineno": 186,
+      "outcome": "passed",
+      "keywords": [
+        "test_api_sqli_defense",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0017744020005920902,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.024507078000169713,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0002111530011461582,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_health_check_endpoint",
+      "lineno": 226,
+      "outcome": "passed",
+      "keywords": [
+        "test_health_check_endpoint",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.0014349009998113615,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002393955999650643,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00011006999920937233,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_api_edge_cases.py::test_compute_risk_logic_boundaries",
+      "lineno": 232,
+      "outcome": "passed",
+      "keywords": [
+        "test_compute_risk_logic_boundaries",
+        "test_api_edge_cases.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.001251914000022225,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0001297369999520015,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00010542500058363657,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_with_datetime_column",
+      "lineno": 7,
+      "outcome": "passed",
+      "keywords": [
+        "test_normalize_noaa_hms_with_datetime_column",
+        "test_ingest_noaa_hms.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.8123001508647576e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.009556275999784702,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 8.893700032786e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_with_yearday_column",
+      "lineno": 41,
+      "outcome": "passed",
+      "keywords": [
+        "test_normalize_noaa_hms_with_yearday_column",
+        "test_ingest_noaa_hms.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.887100087420549e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002707015000851243,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 8.651700045447797e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_filters_out_of_bounds_rows",
+      "lineno": 66,
+      "outcome": "passed",
+      "keywords": [
+        "test_normalize_noaa_hms_filters_out_of_bounds_rows",
+        "test_ingest_noaa_hms.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.802500163554214e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.002075653001156752,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 8.390099901589565e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py::test_normalize_noaa_hms_requires_lat_lon",
+      "lineno": 85,
+      "outcome": "passed",
+      "keywords": [
+        "test_normalize_noaa_hms_requires_lat_lon",
+        "test_ingest_noaa_hms.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.690699981641956e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0003246300002501812,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 8.005799827515148e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py::test_ingest_noaa_hms_inserts_normalized_rows",
+      "lineno": 98,
+      "outcome": "passed",
+      "keywords": [
+        "test_ingest_noaa_hms_inserts_normalized_rows",
+        "test_ingest_noaa_hms.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.002448584000376286,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.031395250000059605,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.0001120449996960815,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_ingest_noaa_hms.py::test_ingest_noaa_hms_requires_url",
+      "lineno": 137,
+      "outcome": "passed",
+      "keywords": [
+        "test_ingest_noaa_hms_requires_url",
+        "test_ingest_noaa_hms.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00010017100066761486,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0001235389991052216,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 9.235600009560585e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestGetNwsGridpoint::test_returns_tuple_on_success",
+      "lineno": 68,
+      "outcome": "passed",
+      "keywords": [
+        "test_returns_tuple_on_success",
+        "TestGetNwsGridpoint",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 9.030399996845517e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0002849590000550961,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 8.301100024254993e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestGetNwsGridpoint::test_returns_none_on_api_failure",
+      "lineno": 73,
+      "outcome": "passed",
+      "keywords": [
+        "test_returns_none_on_api_failure",
+        "TestGetNwsGridpoint",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.511599920282606e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.00020526999833236914,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 7.928800005174708e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestGetNwsGridpoint::test_returns_none_on_malformed_response",
+      "lineno": 78,
+      "outcome": "passed",
+      "keywords": [
+        "test_returns_none_on_malformed_response",
+        "TestGetNwsGridpoint",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 8.097099998849444e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.0004237590001139324,
+        "outcome": "passed",
+        "log": [
+          {
+            "name": "ai_wildfire_tracker.ingest.weather",
+            "msg": "Unexpected NWS points response for 37.7700,-122.4200",
+            "args": null,
+            "levelname": "WARNING",
+            "levelno": 30,
+            "pathname": "/home/tofut/dev/school/cpsc491/d_sprint3/AI-Wildfire-Risk/backend/src/ai_wildfire_tracker/ingest/weather.py",
+            "filename": "weather.py",
+            "module": "weather",
+            "exc_info": null,
+            "exc_text": null,
+            "stack_info": null,
+            "lineno": 104,
+            "funcName": "get_nws_gridpoint",
+            "created": 1776241756.4773502,
+            "msecs": 477.0,
+            "relativeCreated": 3276.419162750244,
+            "thread": 123319298949120,
+            "threadName": "MainThread",
+            "processName": "MainProcess",
+            "process": 42336
+          }
+        ]
+      },
+      "teardown": {
+        "duration": 8.796099973551463e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_mph_to_kmh_conversion",
+      "lineno": 90,
+      "outcome": "passed",
+      "keywords": [
+        "test_mph_to_kmh_conversion",
+        "TestExtractCurrentConditions",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 6.733699956384953e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 9.898800090013538e-05,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 7.954800094012171e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_kmh_wind_passthrough",
+      "lineno": 100,
+      "outcome": "passed",
+      "keywords": [
+        "test_kmh_wind_passthrough",
+        "TestExtractCurrentConditions",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.423700167739298e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 6.557999950018711e-05,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.000666128999000648,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_fahrenheit_to_celsius_conversion",
+      "lineno": 109,
+      "outcome": "passed",
+      "keywords": [
+        "test_fahrenheit_to_celsius_conversion",
+        "TestExtractCurrentConditions",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 8.13389997347258e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 7.066999933158513e-05,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 7.724799979769159e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_humidity_extracted",
+      "lineno": 116,
+      "outcome": "passed",
+      "keywords": [
+        "test_humidity_extracted",
+        "TestExtractCurrentConditions",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.3932999435346574e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 6.537399895023555e-05,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 7.612999979755841e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_empty_periods_returns_none",
+      "lineno": 125,
+      "outcome": "passed",
+      "keywords": [
+        "test_empty_periods_returns_none",
+        "TestExtractCurrentConditions",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.259800127532799e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 5.5170999985421076e-05,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 7.553300019935705e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestExtractCurrentConditions::test_missing_humidity_defaults_to_zero",
+      "lineno": 129,
+      "outcome": "passed",
+      "keywords": [
+        "test_missing_humidity_defaults_to_zero",
+        "TestExtractCurrentConditions",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 5.359699935070239e-05,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 6.796699926781002e-05,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 7.705200005148072e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestIngestWeather::test_inserts_weather_rows",
+      "lineno": 141,
+      "outcome": "passed",
+      "keywords": [
+        "test_inserts_weather_rows",
+        "TestIngestWeather",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.01866999300000316,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.028970219000257202,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00010521799958951306,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestIngestWeather::test_skips_already_fetched_today",
+      "lineno": 163,
+      "outcome": "passed",
+      "keywords": [
+        "test_skips_already_fetched_today",
+        "TestIngestWeather",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.018924496000181534,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.037733299999672454,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00013107299855619203,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestIngestWeather::test_no_fires_table_returns_zero",
+      "lineno": 190,
+      "outcome": "passed",
+      "keywords": [
+        "test_no_fires_table_returns_zero",
+        "TestIngestWeather",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00047520699990855064,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.02355807599997206,
+        "outcome": "passed",
+        "log": [
+          {
+            "name": "ai_wildfire_tracker.ingest.weather",
+            "msg": "fires table does not exist yet \u2014 run FIRMS ingest first",
+            "args": null,
+            "levelname": "WARNING",
+            "levelno": 30,
+            "pathname": "/home/tofut/dev/school/cpsc491/d_sprint3/AI-Wildfire-Risk/backend/src/ai_wildfire_tracker/ingest/weather.py",
+            "filename": "weather.py",
+            "module": "weather",
+            "exc_info": null,
+            "exc_text": null,
+            "stack_info": null,
+            "lineno": 218,
+            "funcName": "ingest_weather",
+            "created": 1776241756.605592,
+            "msecs": 605.0,
+            "relativeCreated": 3404.660940170288,
+            "thread": 123319298949120,
+            "threadName": "MainThread",
+            "processName": "MainProcess",
+            "process": 42336
+          }
+        ]
+      },
+      "teardown": {
+        "duration": 0.00014132900105323642,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestIngestWeather::test_missing_db_raises",
+      "lineno": 199,
+      "outcome": "passed",
+      "keywords": [
+        "test_missing_db_raises",
+        "TestIngestWeather",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.00043130299854965415,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.00012117400001443457,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 9.117300032812636e-05,
+        "outcome": "passed"
+      }
+    },
+    {
+      "nodeid": "tests/test_weather.py::TestIngestWeather::test_offshore_point_skipped",
+      "lineno": 208,
+      "outcome": "passed",
+      "keywords": [
+        "test_offshore_point_skipped",
+        "TestIngestWeather",
+        "test_weather.py",
+        "tests",
+        "backend",
+        ""
+      ],
+      "setup": {
+        "duration": 0.020651033000831376,
+        "outcome": "passed"
+      },
+      "call": {
+        "duration": 0.016990517999147414,
+        "outcome": "passed"
+      },
+      "teardown": {
+        "duration": 0.00019599999905040022,
+        "outcome": "passed"
+      }
+    }
+  ],
+  "build_id": "003-c7d8e9f",
+  "sha": "c7d8e9f",
+  "run_number": 3
+}

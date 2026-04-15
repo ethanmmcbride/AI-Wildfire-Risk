@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "ai-wildfire-tracker"
 version = "0.1.0"
 description = "AI-powered wildfire detection, tracking, and risk assessment"
-readme = "../README.md"
+readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 authors = [
@@ -31,6 +31,8 @@ dev = [
     "ruff>=0.9.0",
     "mypy>=1.13.0",
     "pandas-stubs>=2.2.0",
+    "pytest-json-report>=1.5.0",
+    "pytest-cov>=4.1.0",
 ]
 
 [tool.setuptools.packages.find]
