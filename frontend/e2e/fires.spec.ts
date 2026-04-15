@@ -51,4 +51,17 @@ test.describe("AI Wildfire Tracker E2E", () => {
     await expect(page.getByText("No events match filters.")).toBeVisible();
     await expect(page.getByTestId("events-count")).toHaveText("0 events");
   });
+
+  test("keeps event count consistent with visible event rows after filters", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    await page.getByTestId("ca-toggle").uncheck();
+    await expect(page.getByTestId("events-count")).toHaveText("5 events");
+
+    await expect(page.getByTestId("event-row")).toHaveCount(5);
+
+    await page.getByTestId("confidence-filter").selectOption("high");
+    await expect(page.getByTestId("events-count")).toHaveText("2 events");
+    await expect(page.getByTestId("event-row")).toHaveCount(2);
+  });
 });
