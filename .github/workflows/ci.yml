@@ -118,7 +118,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r ai/requirements.txt
-          pip install ruff
+          pip install ruff pytest-cov
       - name: Lint AI Module (Ruff)
         run: ruff check ai/src
       - name: Check AI Format (Ruff)
@@ -126,7 +126,11 @@ jobs:
       - name: Run AI/ML Tests
         env:
           PYTHONPATH: ai/src
-        run: pytest ai/src/ai_wildfire/tests/ -v
+        run: |
+          pytest ai/src/ai_wildfire/tests/ -v \
+            --cov=ai_wildfire \
+            --cov-report=term-missing \
+            --cov-fail-under=60
 
   test-e2e:
     needs: changes
