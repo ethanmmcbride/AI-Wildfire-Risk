@@ -219,8 +219,9 @@ def test_api_sqli_defense(client):
     malicious_payload = "high' OR '1'='1"
     response = client.get(f"/fires?confidence={malicious_payload}")
 
-    assert response.status_code == 200
-    assert response.json() == []
+    # Now rejected at the validation layer (400) before reaching the DB
+    assert response.status_code == 400
+    assert "detail" in response.json()
 
 
 def test_health_check_endpoint(client):
