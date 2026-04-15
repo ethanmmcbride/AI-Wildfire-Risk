@@ -1,4 +1,3 @@
-# Spirnt 2 Resubmission
 import logging
 import os
 
@@ -17,7 +16,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],
+    allow_methods=["GET"],  # Lock this down to GET requests only
     allow_headers=["*"],
 )
 
@@ -63,6 +62,7 @@ def health():
 def get_fires(
     confidence: str | None = Query(default=None, description="Filter by confidence"),
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
+    limit: int = Query(default=1000, ge=1, le=5000, description="Max results to return"),
 ):
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
