@@ -1,6 +1,5 @@
 """
 test_ndvi.py — pytest tests for the Open-Meteo environmental conditions ingestor
-backend/tests/test_ndvi.py
 
 Test methodology: unit tests with mocked HTTP calls and a self-contained
 DuckDB fixture. No live Open-Meteo API calls are made.

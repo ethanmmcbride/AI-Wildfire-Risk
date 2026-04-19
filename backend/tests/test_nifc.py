@@ -1,6 +1,5 @@
 """
 test_nifc.py — pytest tests for the NIFC fire perimeter ingestor
-backend/tests/test_nifc.py
 
 Test methodology: unit tests with mocked HTTP calls and a self-contained
 DuckDB fixture. No live NIFC API calls are made. Shapely used for spatial ops.
@@ -131,9 +130,7 @@ class TestFetchNifcPerimeters:
         """ArcGIS error JSON response returns empty list."""
         with patch(
             "ai_wildfire_tracker.ingest.nifc.SESSION.get",
-            return_value=_make_mock_response(
-                {"error": {"code": 400, "message": "bad request"}}
-            ),
+            return_value=_make_mock_response({"error": {"code": 400, "message": "bad request"}}),
         ):
             result = fetch_nifc_perimeters()
 
@@ -190,9 +187,7 @@ class TestLabelFireDetections:
         con = duckdb.connect(mem_db)
         ensure_labels_table(con)
         label_fire_detections(con, polygons, "2026-04-19T00:00:00")
-        rows = con.execute(
-            "SELECT label FROM fire_labels WHERE latitude = 37.77"
-        ).fetchall()
+        rows = con.execute("SELECT label FROM fire_labels WHERE latitude = 37.77").fetchall()
         con.close()
         assert len(rows) == 1
         assert rows[0][0] == 1
@@ -203,9 +198,7 @@ class TestLabelFireDetections:
         con = duckdb.connect(mem_db)
         ensure_labels_table(con)
         label_fire_detections(con, polygons, "2026-04-19T00:00:00")
-        rows = con.execute(
-            "SELECT label FROM fire_labels WHERE latitude = 34.05"
-        ).fetchall()
+        rows = con.execute("SELECT label FROM fire_labels WHERE latitude = 34.05").fetchall()
         con.close()
         assert len(rows) == 1
         assert rows[0][0] == 0
@@ -246,8 +239,9 @@ class TestIngestNifc:
     def test_tc23_missing_db_raises(self, tmp_path):
         """TC-23: Missing DB file raises FileNotFoundError."""
         missing = str(tmp_path / "nonexistent.db")
-        with patch("ai_wildfire_tracker.ingest.nifc.DB_PATH", missing), pytest.raises(
-            FileNotFoundError
+        with (
+            patch("ai_wildfire_tracker.ingest.nifc.DB_PATH", missing),
+            pytest.raises(FileNotFoundError),
         ):
             ingest_nifc()
 

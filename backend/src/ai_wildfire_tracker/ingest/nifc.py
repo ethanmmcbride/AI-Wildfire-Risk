@@ -1,6 +1,5 @@
 """
 nifc.py — NIFC fire perimeter ingestor for AI Wildfire Tracker
-backend/src/ai_wildfire_tracker/ingest/nifc.py
 
 Downloads WFIGS current interagency fire perimeters from the NIFC ArcGIS
 REST API and performs a spatial join against FIRMS fire detection points
@@ -127,9 +126,7 @@ def fetch_nifc_perimeters(max_features: int = NIFC_MAX_FEATURES) -> list[dict]:
     return features
 
 
-def store_perimeters(
-    con: duckdb.DuckDBPyConnection, features: list[dict], fetched_at: str
-) -> int:
+def store_perimeters(con: duckdb.DuckDBPyConnection, features: list[dict], fetched_at: str) -> int:
     """Store raw perimeter features in fire_perimeters table. Returns count inserted."""
     if not features:
         return 0
@@ -176,9 +173,7 @@ def point_in_any_perimeter(lat: float, lon: float, polygons: list) -> bool:
     return any(poly.contains(pt) for poly in polygons)
 
 
-def label_fire_detections(
-    con: duckdb.DuckDBPyConnection, polygons: list, labeled_at: str
-) -> int:
+def label_fire_detections(con: duckdb.DuckDBPyConnection, polygons: list, labeled_at: str) -> int:
     """
     For each FIRMS detection in the fires table, assign label 1 if the point
     falls inside a NIFC perimeter polygon, else 0.
@@ -212,12 +207,8 @@ def label_fire_detections(
 
     # Load already-labeled keys to avoid duplicates
     try:
-        existing = con.execute(
-            "SELECT latitude, longitude, acq_date FROM fire_labels"
-        ).df()
-        existing_keys = set(
-            zip(existing["latitude"], existing["longitude"], existing["acq_date"])
-        )
+        existing = con.execute("SELECT latitude, longitude, acq_date FROM fire_labels").df()
+        existing_keys = set(zip(existing["latitude"], existing["longitude"], existing["acq_date"]))
     except duckdb.CatalogException:
         existing_keys = set()
 
@@ -270,9 +261,7 @@ def ingest_nifc() -> dict:
         positive_labels:     int
     """
     if not os.path.exists(DB_PATH):
-        raise FileNotFoundError(
-            f"Database not found: {DB_PATH}. Run FIRMS ingest first."
-        )
+        raise FileNotFoundError(f"Database not found: {DB_PATH}. Run FIRMS ingest first.")
 
     con = duckdb.connect(DB_PATH)
     ensure_perimeter_table(con)
@@ -293,9 +282,7 @@ def ingest_nifc() -> dict:
     detections_labeled = label_fire_detections(con, polygons, fetched_at)
 
     try:
-        result = con.execute(
-            "SELECT COUNT(*) FROM fire_labels WHERE label = 1"
-        ).fetchone()
+        result = con.execute("SELECT COUNT(*) FROM fire_labels WHERE label = 1").fetchone()
         positive_labels = result[0] or 0
     except duckdb.CatalogException:
         positive_labels = 0
