@@ -60,6 +60,7 @@ SESSION.headers.update({"Accept": "application/json"})
 # Schema helpers
 # ---------------------------------------------------------------------------
 
+
 def ensure_environmental_table(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(
         """
@@ -79,6 +80,7 @@ def ensure_environmental_table(con: duckdb.DuckDBPyConnection) -> None:
 # ---------------------------------------------------------------------------
 # Open-Meteo API helper
 # ---------------------------------------------------------------------------
+
 
 def fetch_environmental_conditions(lat: float, lon: float) -> dict | None:
     """
@@ -135,6 +137,7 @@ def fetch_environmental_conditions(lat: float, lon: float) -> dict | None:
 # Dedup: skip points already fetched today
 # ---------------------------------------------------------------------------
 
+
 def _already_fetched_today(
     con: duckdb.DuckDBPyConnection, lat: float, lon: float, today: str
 ) -> bool:
@@ -155,6 +158,7 @@ def _already_fetched_today(
 # Public ingest function
 # ---------------------------------------------------------------------------
 
+
 def ingest_environmental(limit: int = OPEN_METEO_MAX_POINTS) -> int:
     """
     For each unique fire detection point in the fires table (up to `limit`),
@@ -164,9 +168,7 @@ def ingest_environmental(limit: int = OPEN_METEO_MAX_POINTS) -> int:
     Returns the number of new rows inserted.
     """
     if not os.path.exists(DB_PATH):
-        raise FileNotFoundError(
-            f"Database not found: {DB_PATH}. Run FIRMS ingest first."
-        )
+        raise FileNotFoundError(f"Database not found: {DB_PATH}. Run FIRMS ingest first.")
 
     con = duckdb.connect(DB_PATH)
     ensure_environmental_table(con)
@@ -204,9 +206,7 @@ def ingest_environmental(limit: int = OPEN_METEO_MAX_POINTS) -> int:
         con.close()
         return 0
 
-    logger.info(
-        "Fetching Open-Meteo environmental conditions for %d points", len(points_df)
-    )
+    logger.info("Fetching Open-Meteo environmental conditions for %d points", len(points_df))
     rows = []
 
     for _, row in points_df.iterrows():
