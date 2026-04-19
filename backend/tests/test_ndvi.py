@@ -29,10 +29,10 @@ from ai_wildfire_tracker.ingest.ndvi import (
     ingest_environmental,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def mem_db(tmp_path):
@@ -86,6 +86,7 @@ def _make_mock_response(data: dict) -> MagicMock:
 # ---------------------------------------------------------------------------
 # Unit tests: fetch_environmental_conditions (TC-07 to TC-09)
 # ---------------------------------------------------------------------------
+
 
 class TestFetchEnvironmentalConditions:
     def test_tc07_returns_correct_values_on_success(self):
@@ -175,6 +176,7 @@ class TestFetchEnvironmentalConditions:
 # Unit tests: dedup helper
 # ---------------------------------------------------------------------------
 
+
 class TestAlreadyFetchedToday:
     def test_returns_false_when_table_empty(self, mem_db):
         con = duckdb.connect(mem_db)
@@ -199,6 +201,7 @@ class TestAlreadyFetchedToday:
 # ---------------------------------------------------------------------------
 # Integration tests: ingest_environmental (TC-10 to TC-14)
 # ---------------------------------------------------------------------------
+
 
 class TestIngestEnvironmental:
     def test_tc10_inserts_rows_for_all_fire_points(self, mem_db):
@@ -257,7 +260,10 @@ class TestIngestEnvironmental:
         """TC-13: Missing DB file raises FileNotFoundError."""
         missing = str(tmp_path / "nonexistent.db")
 
-        with patch("ai_wildfire_tracker.ingest.ndvi.DB_PATH", missing), pytest.raises(FileNotFoundError):
+        with (
+            patch("ai_wildfire_tracker.ingest.ndvi.DB_PATH", missing),
+            pytest.raises(FileNotFoundError),
+        ):
             ingest_environmental()
 
     def test_tc14_api_failure_skips_all_points(self, mem_db):
