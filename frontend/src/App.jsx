@@ -65,6 +65,25 @@ function buildFireId(fire, index) {
   ].join("|");
 }
 
+function isStaleFireData(events, staleDays = 2) {
+  if (!events || events.length === 0) return false;
+
+  const newestDate = events
+    .map((event) => {
+      const time = String(event.acq_time ?? "0000").padStart(4, "0");
+      return new Date(`${event.acq_date}T${time.slice(0, 2)}:${time.slice(2, 4)}:00`);
+    })
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => b - a)[0];
+
+  if (!newestDate) return false;
+
+  const ageMs = Date.now() - newestDate.getTime();
+  const staleMs = staleDays * 24 * 60 * 60 * 1000;
+
+  return ageMs > staleMs;
+}
+
 function FitBounds({ fires }) {
   const map = useMap();
 
@@ -154,6 +173,8 @@ export default function App() {
     [fires]
   );
 
+  const showStaleBanner = isStaleFireData(preparedFires);
+
   const filteredFires = useMemo(
     () =>
       preparedFires.filter((f) => {
@@ -234,6 +255,12 @@ export default function App() {
         </div>
 
       </header>
+
+      {showStaleBanner && !loading && !err && (
+        <div className="stale-data-banner" data-testid="stale-data-banner">
+          Wildfire data may be stale. Latest fire record is older than 2 days.
+        </div>
+      )}
 
       <div className="main-layout">
         <section className="controls-panel">
