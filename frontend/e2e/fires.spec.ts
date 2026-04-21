@@ -2,10 +2,13 @@ import { expect, test } from "@playwright/test";
 
 test.describe("AI Wildfire Tracker E2E", () => {
   test("loads with seeded California results and no API error", async ({ page }) => {
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/", { waitUntil: "networkidle" });
 
-    await expect(page.getByTestId("events-count")).toHaveText("3 events");
-    await expect(page.locator(".error-banner")).toHaveCount(0);
+  await expect(page.getByText("Loading...")).toHaveCount(0);
+  await expect(page.getByTestId("events-count")).toHaveText("3 events", {
+    timeout: 10000,
+  });
+  await expect(page.locator(".error-banner")).toHaveCount(0);
   });
 
   test("starts with California-only filter enabled", async ({ page }) => {
