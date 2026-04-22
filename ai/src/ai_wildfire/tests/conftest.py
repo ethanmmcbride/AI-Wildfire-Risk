@@ -53,9 +53,9 @@ def trained_model_path(golden_df, tmp_artifact_dir):
     set_seed()
     X, y = build_feature_matrix(golden_df)
     X_train, _, y_train, _ = train_test_split(
-        X, y, test_size=0.2, random_state=configs.RANDOM_SEED
+        X, y, test_size=0.2, random_state=configs.RANDOM_SEED, stratify=y
     )
-    model = LogisticRegression(max_iter=200)
+    model = LogisticRegression(max_iter=200, class_weight=configs.MODEL_CLASS_WEIGHT)
     model.fit(X_train, y_train)
     path = model_store.save_model(
         model, {"model": "LogisticRegression", "n_rows": len(golden_df)}

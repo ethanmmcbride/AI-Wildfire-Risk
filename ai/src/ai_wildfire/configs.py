@@ -16,3 +16,4 @@ ARTIFACT_DIR = REPO_ROOT / "ai" / "artifacts"
 MODEL_FILENAME = "baseline_model.joblib"
 METRICS_FILENAME = "metrics.json"
 RANDOM_SEED = 42
+MODEL_CLASS_WEIGHT = "balanced"
