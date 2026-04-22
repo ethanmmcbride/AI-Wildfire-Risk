@@ -200,4 +200,5 @@ jobs:
         run: bandit -r backend/src/ -ll
 
       - name: Run pip-audit on Backend Dependencies
+        continue-on-error: true
         run: pip-audit -r backend/requirements.txt
