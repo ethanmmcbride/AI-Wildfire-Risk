@@ -1,10 +1,10 @@
 from .model_store import load_model
 from .features import build_feature_matrix
-from .data_loader import load_firms_table
+from .data_loader import load_fires_with_weather
 
 
 def predict_from_db(limit=10):
-    df = load_firms_table(limit=limit)
+    df = load_fires_with_weather(limit=limit)
 
     X, _ = build_feature_matrix(df)
     model = load_model()

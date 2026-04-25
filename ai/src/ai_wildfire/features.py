@@ -55,10 +55,27 @@ def basic_preprocess(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+WEATHER_COLUMNS = ["wind_speed_kmh", "humidity_pct", "temp_c"]
+
+
 def build_feature_matrix(df: pd.DataFrame):
     df = basic_preprocess(df)
 
-    feature_cols = ["bright_ti4", "bright_ti5", "frp", "hour", "lat_bin", "lon_bin"]
+    for col in WEATHER_COLUMNS:
+        if col not in df.columns:
+            df[col] = 0.0
+
+    feature_cols = [
+        "bright_ti4",
+        "bright_ti5",
+        "frp",
+        "hour",
+        "lat_bin",
+        "lon_bin",
+        "wind_speed_kmh",
+        "humidity_pct",
+        "temp_c",
+    ]
     X = df[feature_cols].fillna(0)
 
     y = df["confidence_bin"]

@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
 from .configs import ARTIFACT_DIR, METRICS_FILENAME, MODEL_CLASS_WEIGHT, RANDOM_SEED
-from .data_loader import load_firms_table
+from .data_loader import load_fires_with_weather
 from .features import build_feature_matrix
 from .model_store import save_model
 from .utils import evaluate_model, set_seed
@@ -19,7 +19,7 @@ from .utils import evaluate_model, set_seed
 def train(limit, test_size):
     set_seed()
     print("Loading data from DB...")
-    df = load_firms_table(limit=limit)
+    df = load_fires_with_weather(limit=limit)
     print(f"Loaded {len(df)} rows")
     X, y = build_feature_matrix(df)
     X_train, X_test, y_train, y_test = train_test_split(

@@ -2,9 +2,9 @@ import duckdb
 import pytest
 
 from ai_wildfire import configs
-from ai_wildfire.data_loader import load_firms_table
+from ai_wildfire.data_loader import load_fires_with_weather, load_firms_table
 
-EXPECTED_COLUMNS = [
+EXPECTED_FIRE_COLUMNS = [
     "latitude",
     "longitude",
     "bright_ti4",
@@ -15,10 +15,12 @@ EXPECTED_COLUMNS = [
     "confidence",
 ]
 
+WEATHER_COLUMNS = ["wind_speed_kmh", "humidity_pct", "temp_c"]
+
 
 def test_load_firms_table_returns_expected_columns(seeded_golden_db):
     df = load_firms_table()
-    assert list(df.columns) == EXPECTED_COLUMNS
+    assert list(df.columns) == EXPECTED_FIRE_COLUMNS
 
 
 def test_load_firms_table_returns_correct_row_count(seeded_golden_db):
@@ -33,5 +35,37 @@ def test_load_firms_table_respects_limit(seeded_golden_db):
 
 def test_load_firms_table_missing_db_raises(monkeypatch):
     monkeypatch.setattr(configs, "DB_PATH", "/nonexistent/path/missing.db")
-    with pytest.raises((duckdb.IOException, duckdb.Error)):
+    with pytest.raises((duckdb.IOException, duckdb.CatalogException, duckdb.Error)):
         load_firms_table()
+
+
+def test_load_fires_with_weather_returns_weather_columns(seeded_golden_db):
+    df = load_fires_with_weather()
+    for col in WEATHER_COLUMNS:
+        assert col in df.columns, f"Missing weather column: {col}"
+
+
+def test_load_fires_with_weather_preserves_row_count(seeded_golden_db):
+    df = load_fires_with_weather()
+    assert len(df) == 50
+
+
+def test_load_fires_with_weather_respects_limit(seeded_golden_db):
+    df = load_fires_with_weather(limit=10)
+    assert len(df) == 10
+
+
+def test_load_fires_with_weather_has_some_weather_data(seeded_golden_db):
+    df = load_fires_with_weather()
+    assert df["wind_speed_kmh"].notna().any(), "Some rows should have weather data"
+
+
+def test_load_fires_with_weather_has_some_missing_weather(seeded_golden_db):
+    df = load_fires_with_weather()
+    assert df["wind_speed_kmh"].isna().any(), "Some rows should lack weather data"
+
+
+def test_load_fires_with_weather_fallback_without_table(seeded_golden_db_no_weather):
+    df = load_fires_with_weather()
+    assert len(df) == 50
+    assert list(df.columns) == EXPECTED_FIRE_COLUMNS

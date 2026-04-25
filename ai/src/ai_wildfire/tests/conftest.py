@@ -12,11 +12,17 @@ from ai_wildfire.utils import set_seed
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 GOLDEN_CSV = FIXTURES_DIR / "golden_fires.csv"
+GOLDEN_WEATHER_CSV = FIXTURES_DIR / "golden_weather.csv"
 
 
 @pytest.fixture()
 def golden_df():
     return pd.read_csv(GOLDEN_CSV)
+
+
+@pytest.fixture()
+def golden_weather_df():
+    return pd.read_csv(GOLDEN_WEATHER_CSV)
 
 
 @pytest.fixture()
@@ -26,8 +32,44 @@ def tmp_artifact_dir(tmp_path, monkeypatch):
 
 
 @pytest.fixture()
-def seeded_golden_db(tmp_path, monkeypatch, golden_df):
+def seeded_golden_db(tmp_path, monkeypatch, golden_df, golden_weather_df):
     db_path = str(tmp_path / "golden_test.db")
+    con = duckdb.connect(db_path)
+    con.execute("""
+        CREATE TABLE fires (
+            latitude DOUBLE,
+            longitude DOUBLE,
+            bright_ti4 DOUBLE,
+            bright_ti5 DOUBLE,
+            frp DOUBLE,
+            acq_date VARCHAR,
+            acq_time VARCHAR,
+            confidence VARCHAR
+        )
+    """)
+    con.execute("INSERT INTO fires SELECT * FROM golden_df")
+    con.execute("""
+        CREATE TABLE weather_observations (
+            latitude DOUBLE,
+            longitude DOUBLE,
+            obs_date VARCHAR,
+            wind_speed_kmh DOUBLE,
+            humidity_pct DOUBLE,
+            temp_c DOUBLE,
+            fetched_at VARCHAR
+        )
+    """)
+    con.execute("INSERT INTO weather_observations SELECT * FROM golden_weather_df")
+    con.close()
+    monkeypatch.setattr(configs, "DB_PATH", db_path)
+    monkeypatch.setattr(data_loader, "DB_PATH", db_path)
+    return db_path
+
+
+@pytest.fixture()
+def seeded_golden_db_no_weather(tmp_path, monkeypatch, golden_df):
+    """Seeded DB with fires only -- no weather_observations table."""
+    db_path = str(tmp_path / "golden_no_weather.db")
     con = duckdb.connect(db_path)
     con.execute("""
         CREATE TABLE fires (
