@@ -1,32 +1,29 @@
 {
   "metrics": {
-    "report": {
-      "0": {
-        "precision": 0.99,
-        "recall": 1.0,
-        "f1-score": 0.9949748743718593,
-        "support": 99.0
-      },
-      "1": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 1.0
-      },
-      "accuracy": 0.99,
-      "macro avg": {
-        "precision": 0.495,
-        "recall": 0.5,
-        "f1-score": 0.49748743718592964,
-        "support": 100.0
-      },
-      "weighted avg": {
-        "precision": 0.9801000000000001,
-        "recall": 0.99,
-        "f1-score": 0.9850251256281406,
-        "support": 100.0
-      }
-    },
-    "auc": 1.0
+    "model": "RandomForestClassifier",
+    "n_estimators": 100,
+    "n_rows": 110750,
+    "n_features": 13,
+    "test_size": 0.2,
+    "accuracy": 0.9924,
+    "precision": 0.9429,
+    "recall": 0.9375,
+    "f1": 0.9402,
+    "auc_roc": 0.9993,
+    "feature_importances": {
+      "bright_ti4": 0.6411,
+      "bright_ti5": 0.0996,
+      "frp": 0.1878,
+      "hour": 0.0469,
+      "month": 0.0026,
+      "lat_bin": 0.006,
+      "lon_bin": 0.0119,
+      "wind_speed_kmh": 0.0007,
+      "humidity_pct": 0.0007,
+      "temp_c": 0.0007,
+      "soil_moisture": 0.0005,
+      "vpd_kpa": 0.0007,
+      "et0_mm": 0.0008
+    }
   }
 }

@@ -1,6 +1,22 @@
 {
-  "n_rows": 500,
+  "n_rows": 110750,
   "test_size": 0.2,
-  "model": "LogisticRegression",
-  "saved_at": "2026-03-17T21:50:35.846238+00:00"
+  "model": "RandomForestClassifier",
+  "n_estimators": 100,
+  "features": [
+    "bright_ti4",
+    "bright_ti5",
+    "frp",
+    "hour",
+    "month",
+    "lat_bin",
+    "lon_bin",
+    "wind_speed_kmh",
+    "humidity_pct",
+    "temp_c",
+    "soil_moisture",
+    "vpd_kpa",
+    "et0_mm"
+  ],
+  "saved_at": "2026-04-26T06:56:57.050441+00:00"
 }
