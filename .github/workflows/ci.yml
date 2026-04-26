@@ -6,12 +6,14 @@ on:
       - "backend/**"
       - "frontend/**"
       - "ai/**"
+      - "test-tracking/**"
       - ".github/workflows/ci.yml"
   pull_request:
     paths:
       - "backend/**"
       - "frontend/**"
       - "ai/**"
+      - "test-tracking/**"
       - ".github/workflows/ci.yml"
 
 permissions:
@@ -33,6 +35,7 @@ jobs:
           filters: |
             backend:
               - 'backend/**'
+              - 'test-tracking/**'
               - '.github/workflows/ci.yml'
             frontend:
               - 'frontend/**'
@@ -45,6 +48,8 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    env:
+      BUILD_ID: "${{ github.run_number }}-${{ github.sha }}"
     steps:
       - uses: actions/checkout@v4
 
@@ -59,7 +64,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r backend/requirements.txt
-          pip install pytest pytest-cov httpx ruff pyarrow
+          pip install pytest pytest-cov httpx ruff pyarrow pytest-json-report
 
       - name: Lint Backend (Ruff)
         run: ruff check backend/src backend/tests
@@ -71,7 +76,10 @@ jobs:
         env:
           PYTHONPATH: backend/src
         run: |
+          BUILD_SHORT="${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+          mkdir -p test-tracking/results
           pytest backend/tests -v \
+            --ignore=backend/tests/e2e \
             --cov=ai_wildfire_tracker \
             --cov-report=term-missing \
             --cov-report=xml \
@@ -82,10 +90,104 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-test-results
+          name: "backend-test-results-${{ github.run_number }}-${{ github.sha }}"
           path: |
-            backend-test-results.xml
+            backend-test-results-*.xml
             coverage.xml
+            test-tracking/results/build-*.json
+
+  test-performance:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest httpx
+
+      - name: Run Performance Tests
+        env:
+          PYTHONPATH: backend/src
+        run: |
+          pytest backend/tests/performance/ -v \
+            --junitxml=performance-test-results.xml
+
+      - name: Upload Performance Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "performance-test-results-${{ github.run_number }}"
+          path: performance-test-results.xml
+
+  test-security:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest httpx
+
+      - name: Run Security Tests
+        env:
+          PYTHONPATH: backend/src
+        run: |
+          pytest backend/tests/security/ -v \
+            --junitxml=security-test-results.xml
+
+      - name: Upload Security Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "security-test-results-${{ github.run_number }}"
+          path: security-test-results.xml
+
+  test-integration:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pytest httpx
+
+      - name: Run Integration Tests
+        env:
+          PYTHONPATH: backend/src
+        run: |
+          pytest backend/tests/integration/ -v \
+            --junitxml=integration-test-results.xml
+
+      - name: Upload Integration Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "integration-test-results-${{ github.run_number }}"
+          path: integration-test-results.xml
 
   test-frontend:
     needs: changes
@@ -157,6 +259,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run End-to-End Tests
         run: npm run test:e2e:ci
+
   security-scan:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}

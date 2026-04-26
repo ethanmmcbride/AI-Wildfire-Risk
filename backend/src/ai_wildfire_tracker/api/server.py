@@ -293,6 +293,13 @@ def get_fires(
             detail=f"Invalid region '{region}'. Must be one of: ca, us",
         )
 
+    valid_confidences = ["high", "nominal", "low"]
+    if confidence is not None and confidence.lower() not in valid_confidences:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid confidence '{confidence}'. Must be one of: high, nominal, low",
+        )
+
     if not os.path.exists(DB_PATH):
         logger.warning("Database file does not exist: %s", DB_PATH)
         return []
