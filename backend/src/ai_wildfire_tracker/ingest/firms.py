@@ -176,13 +176,13 @@ def ingest_firms() -> int:
         raise RuntimeError("Missing FIRMS_API_KEY in .env")
 
     df = fetch_firms_window(api_key, source="VIIRS_SNPP_NRT", day_range=1)
-    if df.empty:
-        logger.warning("No data returned from FIRMS NRT fetch")
-        return 0
 
     con = duckdb.connect(DB_PATH)
     try:
         ensure_fires_table(con)
+        if df.empty:
+            logger.warning("No data returned from FIRMS NRT fetch")
+            return 0
         row = con.execute("SELECT COUNT(*) FROM fires").fetchone()
         count_before = row[0] if row is not None else 0
         con.execute(
@@ -206,8 +206,7 @@ def ingest_firms() -> int:
             len(df) - inserted,
             DB_PATH,
         )
-        logger.info("Inserted %d fire records into %s", len(df), DB_PATH)
-        return len(df)
+        return inserted
     finally:
         con.close()
 
