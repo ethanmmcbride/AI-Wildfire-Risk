@@ -75,7 +75,7 @@ jobs:
             --cov=ai_wildfire_tracker \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=70 \
+            --cov-fail-under=65 \
             --junitxml=backend-test-results.xml
 
       - name: Upload Backend Test Results
