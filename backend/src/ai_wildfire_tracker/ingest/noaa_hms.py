@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def _find_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
-    lowered = {c.lower(): c for c in df.columns}
+    lowered: dict[str, str] = {str(c).lower(): str(c) for c in df.columns}
     for name in candidates:
         if name.lower() in lowered:
             return lowered[name.lower()]
@@ -120,7 +120,8 @@ def ingest_noaa_hms() -> None:
     con = duckdb.connect(DB_PATH)
     try:
         ensure_fires_table(con)
-        count_before = con.execute("SELECT COUNT(*) FROM fires").fetchone()[0]
+        row = con.execute("SELECT COUNT(*) FROM fires").fetchone()
+        count_before = row[0] if row is not None else 0
         con.execute(
             """
             INSERT INTO fires
@@ -134,7 +135,8 @@ def ingest_noaa_hms() -> None:
             )
             """
         )
-        inserted = con.execute("SELECT COUNT(*) FROM fires").fetchone()[0] - count_before
+        row = con.execute("SELECT COUNT(*) FROM fires").fetchone()
+        inserted = (row[0] if row is not None else 0) - count_before
         logger.info(
             "Inserted %d new NOAA HMS records (skipped %d duplicates) into %s",
             inserted,

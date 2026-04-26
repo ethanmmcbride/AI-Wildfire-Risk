@@ -67,7 +67,8 @@ def ingest_firms() -> None:
 
     try:
         ensure_fires_table(con)
-        count_before = con.execute("SELECT COUNT(*) FROM fires").fetchone()[0]
+        row = con.execute("SELECT COUNT(*) FROM fires").fetchone()
+        count_before = row[0] if row is not None else 0
         con.execute(
             """
             INSERT INTO fires
@@ -81,7 +82,8 @@ def ingest_firms() -> None:
             )
             """
         )
-        inserted = con.execute("SELECT COUNT(*) FROM fires").fetchone()[0] - count_before
+        row = con.execute("SELECT COUNT(*) FROM fires").fetchone()
+        inserted = (row[0] if row is not None else 0) - count_before
         logger.info(
             "Inserted %d new fire records (skipped %d duplicates) into %s",
             inserted,
