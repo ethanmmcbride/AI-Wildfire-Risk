@@ -31,7 +31,7 @@ export function getRiskScore(fire) {
   }
   const b = Number(fire.brightness ?? 0);
   const f = Number(fire.frp ?? 0);
-  return Number(((b * 0.6) + (f * 0.4)).toFixed(2));
+  return Number(Math.min((b * 0.6 + f * 0.4) / 350, 1.0).toFixed(4));
 }
 
 export function getSeverity(fire) {

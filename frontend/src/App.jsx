@@ -30,6 +30,7 @@ export default function App() {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [showClusters, setShowClusters] = useState(true);
+  const [modelLoaded, setModelLoaded] = useState(null);
 
   const parsedMinBrightness = useMemo(() => {
     const parsed = Number(minBrightness);
@@ -102,6 +103,14 @@ export default function App() {
   }, [filteredFires, selectedEventId]);
 
   useEffect(() => {
+    const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
+    fetch(new URL(`${apiBase}/health`, window.location.origin).toString())
+      .then((r) => r.json())
+      .then((data) => setModelLoaded(data.model_loaded === true))
+      .catch(() => setModelLoaded(false));
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
 
     async function load() {
@@ -142,7 +151,7 @@ export default function App() {
             {loading ? "Loading..." : `${filteredFires.length} points (of ${preparedFires.length} total)`}
           </span>
         </div>
-        {!loading && preparedFires.length > 0 && <StatsBar fires={preparedFires} />}
+        {!loading && preparedFires.length > 0 && <StatsBar fires={preparedFires} modelLoaded={modelLoaded} />}
       </header>
       {isStale && (
         <div data-testid="stale-data-banner" className="stale-banner">

@@ -1,4 +1,4 @@
-export default function StatsBar({ fires }) {
+export default function StatsBar({ fires, modelLoaded }) {
   if (!fires || fires.length === 0) return null;
 
   const critical = fires.filter((f) => f.severity === "critical").length;
@@ -23,12 +23,22 @@ export default function StatsBar({ fires }) {
       </div>
       <div className="stat-divider" />
       <div className="stat-item">
-        <span className="stat-value">{maxRisk.toFixed(3)}</span>
+        <span className="stat-value">{maxRisk.toFixed(4)}</span>
         <span className="stat-label">Max Risk</span>
       </div>
       <div className="stat-item">
         <span className="stat-value">{latestDate}</span>
         <span className="stat-label">Latest Data</span>
+      </div>
+      <div className="stat-divider" />
+      <div className="stat-item">
+        <span
+          className={`stat-value ${modelLoaded ? "stat-model-active" : "stat-model-fallback"}`}
+          data-testid="model-status"
+        >
+          {modelLoaded === null ? "..." : modelLoaded ? "AI Model" : "Fallback"}
+        </span>
+        <span className="stat-label">Risk Source</span>
       </div>
     </div>
   );

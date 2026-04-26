@@ -36,7 +36,7 @@ DB_PATH = os.getenv("TEST_DB_PATH", os.getenv("DB_PATH", "wildfire.db"))
 # Model path — defaults to ai/artifacts relative to project root.
 # Override with MODEL_PATH env var for different environments.
 _DEFAULT_MODEL_PATH = (
-    Path(__file__).parent.parent.parent.parent / "ai" / "artifacts" / "baseline_model.joblib"
+    Path(__file__).parent.parent.parent.parent.parent / "ai" / "artifacts" / "baseline_model.joblib"
 )
 MODEL_PATH = Path(os.getenv("MODEL_PATH", str(_DEFAULT_MODEL_PATH)))
 
