@@ -41,7 +41,7 @@ NWS_MAX_POINTS = int(os.getenv("NWS_MAX_POINTS", "50"))
 
 US_BOUNDS = {
     "min_lat": 24.0,
-    "max_lat": 49.5,
+    "max_lat": 48.5,
     "min_lon": -125.0,
     "max_lon": -66.5,
 }
