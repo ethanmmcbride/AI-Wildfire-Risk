@@ -4,27 +4,27 @@ test.describe("AI Wildfire Tracker E2E", () => {
   test("loads with seeded California results and no API error", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
 
-  await expect(page.getByText("Loading...")).toHaveCount(0);
-  await expect(page.getByTestId("events-count")).toHaveText("3 events", {
-    timeout: 10000,
-  });
-  await expect(page.locator(".error-banner")).toHaveCount(0);
+    await expect(page.getByText("Loading...")).toHaveCount(0);
+    await expect(page.getByTestId("events-count")).toHaveText("3 events", {
+      timeout: 10000,
+    });
+    await expect(page.locator(".error-banner")).toHaveCount(0);
   });
 
-  test("starts with California-only filter enabled", async ({ page }) => {
+  test("starts with California region selected by default", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await expect(page.getByTestId("ca-toggle")).toBeChecked();
+    await expect(page.getByTestId("region-filter")).toHaveValue("ca");
     await expect(page.getByTestId("events-count")).toHaveText("3 events");
     await expect(page.getByText("Lat/Lon: 31.00, -100.00")).toHaveCount(0);
   });
 
-  test("expands result set when California-only is turned off", async ({ page }) => {
+  test("expands result set when region is changed to All US", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId("events-count")).toHaveText("3 events");
-    await page.getByTestId("ca-toggle").uncheck();
-    await expect(page.getByTestId("ca-toggle")).not.toBeChecked();
+    await page.getByTestId("region-filter").selectOption("us");
+    await expect(page.getByTestId("region-filter")).toHaveValue("us");
     await expect(page.getByTestId("events-count")).toHaveText("5 events");
     await expect(page.getByText("Lat/Lon: 31.00, -100.00")).toBeVisible();
   });
@@ -32,8 +32,8 @@ test.describe("AI Wildfire Tracker E2E", () => {
   test("applies confidence filter and FRP ascending sort", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await page.getByTestId("ca-toggle").uncheck();
-    await expect(page.getByTestId("ca-toggle")).not.toBeChecked();
+    await page.getByTestId("region-filter").selectOption("us");
+    await expect(page.getByTestId("region-filter")).toHaveValue("us");
     await expect(page.getByTestId("events-count")).toHaveText("5 events");
 
     await page.getByTestId("confidence-filter").selectOption("high");
@@ -58,7 +58,7 @@ test.describe("AI Wildfire Tracker E2E", () => {
   test("keeps event count consistent with visible event rows after filters", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    await page.getByTestId("ca-toggle").uncheck();
+    await page.getByTestId("region-filter").selectOption("us");
     await expect(page.getByTestId("events-count")).toHaveText("5 events");
 
     await expect(page.getByTestId("event-row")).toHaveCount(5);
@@ -75,28 +75,28 @@ test.describe("AI Wildfire Tracker E2E", () => {
   });
 
   test("shows stale-data banner when fire records are old", async ({ page }) => {
-  await page.route("**/fires*", async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify([
-        {
-          lat: 34.05,
-          lon: -118.25,
-          brightness: 360,
-          frp: 55,
-          confidence: "high",
-          acq_date: "2020-01-01",
-          acq_time: "1210",
-          risk: 238,
-        },
-      ]),
+    await page.route("**/fires*", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          {
+            lat: 34.05,
+            lon: -118.25,
+            brightness: 360,
+            frp: 55,
+            confidence: "high",
+            acq_date: "2020-01-01",
+            acq_time: "1210",
+            risk: 238,
+          },
+        ]),
+      });
     });
+
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByTestId("stale-data-banner")).toBeVisible();
+    await expect(page.getByTestId("stale-data-banner")).toContainText(/stale/i);
   });
-
-  await page.goto("/", { waitUntil: "domcontentloaded" });
-
-  await expect(page.getByTestId("stale-data-banner")).toBeVisible();
-  await expect(page.getByTestId("stale-data-banner")).toContainText(/stale/i);
-});
 });

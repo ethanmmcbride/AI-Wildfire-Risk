@@ -40,18 +40,20 @@ _DEFAULT_MODEL_PATH = (
 )
 MODEL_PATH = Path(os.getenv("MODEL_PATH", str(_DEFAULT_MODEL_PATH)))
 
-US_BOUNDS = {
-    "min_lat": 24.0,
-    "max_lat": 49.5,
-    "min_lon": -125.0,
-    "max_lon": -66.5,
+REGION_BOUNDS = {
+    "us": {"min_lat": 24.0, "max_lat": 49.5, "min_lon": -125.0, "max_lon": -66.5},
+    "ca": {"min_lat": 32.5, "max_lat": 42.1, "min_lon": -124.5, "max_lon": -114.0},
+    "fl": {"min_lat": 24.5, "max_lat": 31.0, "min_lon": -87.6, "max_lon": -80.0},
+    "tx": {"min_lat": 25.8, "max_lat": 36.5, "min_lon": -106.6, "max_lon": -93.5},
+    "or": {"min_lat": 42.0, "max_lat": 46.3, "min_lon": -124.6, "max_lon": -116.5},
+    "wa": {"min_lat": 45.5, "max_lat": 49.0, "min_lon": -124.8, "max_lon": -116.9},
+    "az": {"min_lat": 31.3, "max_lat": 37.0, "min_lon": -114.8, "max_lon": -109.0},
+    "co": {"min_lat": 37.0, "max_lat": 41.0, "min_lon": -109.1, "max_lon": -102.0},
+    "ga": {"min_lat": 30.4, "max_lat": 35.0, "min_lon": -85.6, "max_lon": -80.8},
 }
-CA_BOUNDS = {
-    "min_lat": 32.5,
-    "max_lat": 42.1,
-    "min_lon": -124.5,
-    "max_lon": -114.0,
-}
+
+US_BOUNDS = REGION_BOUNDS["us"]
+CA_BOUNDS = REGION_BOUNDS["ca"]
 
 # ---------------------------------------------------------------------------
 # Model loading — loaded once at startup, not on every request
@@ -286,11 +288,11 @@ def get_fires(
 ):
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
-    valid_regions = ["ca", "us", None]
+    valid_regions = list(REGION_BOUNDS.keys())
     if region is not None and region.lower() not in valid_regions:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid region '{region}'. Must be one of: ca, us",
+            detail=f"Invalid region '{region}'. Must be one of: {', '.join(valid_regions)}",
         )
 
     valid_confidences = ["high", "nominal", "low"]
@@ -332,21 +334,23 @@ def get_fires(
             where_clauses.append("lower(confidence) = lower(?)")
             params.append(confidence)
 
-        if region and region.lower() == "ca":
-            where_clauses.extend(
-                [
-                    "latitude BETWEEN ? AND ?",
-                    "longitude BETWEEN ? AND ?",
-                ]
-            )
-            params.extend(
-                [
-                    CA_BOUNDS["min_lat"],
-                    CA_BOUNDS["max_lat"],
-                    CA_BOUNDS["min_lon"],
-                    CA_BOUNDS["max_lon"],
-                ]
-            )
+        if region and region.lower() != "us":
+            bounds = REGION_BOUNDS.get(region.lower())
+            if bounds:
+                where_clauses.extend(
+                    [
+                        "latitude BETWEEN ? AND ?",
+                        "longitude BETWEEN ? AND ?",
+                    ]
+                )
+                params.extend(
+                    [
+                        bounds["min_lat"],
+                        bounds["max_lat"],
+                        bounds["min_lon"],
+                        bounds["max_lon"],
+                    ]
+                )
 
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)

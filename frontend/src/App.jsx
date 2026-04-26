@@ -1,191 +1,35 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
-import L from "leaflet";
+import { useEffect, useMemo, useState } from "react";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./index.css";
 
+import StatsBar from "./components/StatsBar";
+import FiltersPanel from "./components/FiltersPanel";
+import MapView from "./components/MapView";
+import EventsList from "./components/EventsList";
+import {
+  normalizeConfidence,
+  getRiskScore,
+  getSeverity,
+  getConfidenceRank,
+  buildFireId,
+} from "./components/fireUtils";
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
-const US_BOUNDS = L.latLngBounds([[24, -125], [50, -66]]);
-const US_CENTER = [39.8283, -98.5795];
-const CONFIDENCE_OPTIONS = ["all", "high", "nominal", "low"];
-
-// ---------------------------------------------------------------------------
-// Heatmap layer — loads Leaflet.heat from CDN, renders RF risk-weighted points
-// ---------------------------------------------------------------------------
-
-function HeatmapLayer({ fires }) {
-  const map = useMap();
-  const heatRef = useRef(null);
-
-  useEffect(() => {
-    function addHeat() {
-      if (!window.L || !window.L.heatLayer) return;
-      if (heatRef.current) {
-        map.removeLayer(heatRef.current);
-        heatRef.current = null;
-      }
-      const points = fires
-        .filter((f) => f.risk > 0)
-        .map((f) => [f.lat, f.lon, f.risk]);
-      if (points.length === 0) return;
-      heatRef.current = window.L.heatLayer(points, {
-        radius: 20,
-        blur: 15,
-        maxZoom: 10,
-        gradient: { 0.3: "blue", 0.6: "orange", 1.0: "red" },
-      }).addTo(map);
-    }
-
-    if (window.L && window.L.heatLayer) {
-      addHeat();
-    } else {
-      const existing = document.getElementById("leaflet-heat-script");
-      if (existing) {
-        existing.addEventListener("load", addHeat);
-      } else {
-        const script = document.createElement("script");
-        script.id = "leaflet-heat-script";
-        script.src =
-          "https://cdnjs.cloudflare.com/ajax/libs/Leaflet.heat/0.2.0/leaflet-heat.js";
-        script.onload = addHeat;
-        document.head.appendChild(script);
-      }
-    }
-
-    return () => {
-      if (heatRef.current) {
-        map.removeLayer(heatRef.current);
-        heatRef.current = null;
-      }
-    };
-  }, [fires, map]);
-
-  return null;
-}
-
-// ---------------------------------------------------------------------------
-// Existing helper functions — unchanged
-// ---------------------------------------------------------------------------
-
-function normalizeConfidence(confidence) {
-  const normalized = String(confidence ?? "").trim().toLowerCase();
-  if (["h", "high"].includes(normalized)) return "high";
-  if (["l", "low"].includes(normalized)) return "low";
-  if (["n", "nominal", "medium", "med"].includes(normalized)) return "nominal";
-  return normalized || "unknown";
-}
-
-function getRiskScore(fire) {
-  if (fire.risk !== undefined && fire.risk !== null && !Number.isNaN(Number(fire.risk))) {
-    return Number(fire.risk);
-  }
-  const b = Number(fire.brightness ?? 0);
-  const f = Number(fire.frp ?? 0);
-  return Number(((b * 0.6) + (f * 0.4)).toFixed(2));
-}
-
-function getSeverity(fire) {
-  const b = Number(fire.brightness ?? 0);
-  const f = Number(fire.frp ?? 0);
-  if (b >= 350 || f >= 50) return "critical";
-  if (b >= 320 || f >= 20) return "warning";
-  return "monitor";
-}
-
-function getMarkerColor(fire) {
-  const b = Number(fire.brightness ?? 0);
-  if (b >= 350) return "#d7263d";
-  if (b >= 320) return "#f08c00";
-  return "#ffd43b";
-}
-
-function getMarkerRadius(fire) {
-  const frp = Number(fire.frp ?? 0);
-  return Math.min(12, 3 + frp / 10);
-}
-
-function getConfidenceRank(confidence) {
-  const normalized = String(confidence ?? "").toLowerCase();
-  if (normalized === "high") return 3;
-  if (normalized === "nominal" || normalized === "medium") return 2;
-  if (normalized === "low") return 1;
-  return 0;
-}
-
-function buildFireId(fire, index) {
-  return [
-    fire.lat ?? fire.latitude ?? "na",
-    fire.lon ?? fire.longitude ?? "na",
-    fire.acq_date ?? "na",
-    fire.acq_time ?? "na",
-    fire.brightness ?? "na",
-    fire.frp ?? "na",
-    index,
-  ].join("|");
-}
-
-function FitBounds({ fires }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (fires.length === 0) {
-      map.setView(US_CENTER, 5);
-      return;
-    }
-    if (fires.length === 1) {
-      map.setView([fires[0].lat, fires[0].lon], 7, { animate: true });
-      return;
-    }
-
-    const bounds = L.latLngBounds(
-      fires
-        .map((f) => [Number(f.lat), Number(f.lon)])
-        .filter((coord) => Number.isFinite(coord[0]) && Number.isFinite(coord[1]))
-    );
-
-    if (typeof bounds.isValid === "function" && !bounds.isValid()) {
-      map.setView(US_CENTER, 5);
-      return;
-    }
-
-    map.fitBounds(bounds, { padding: [50, 50], maxZoom: 7 });
-    if (typeof map.getCenter === "function" && typeof US_BOUNDS.contains === "function") {
-      const center = map.getCenter();
-      if (!US_BOUNDS.contains(center)) {
-        const nextZoom = typeof map.getZoom === "function" ? Math.max(map.getZoom(), 4) : 5;
-        map.setView(US_CENTER, nextZoom);
-      }
-    }
-    if (typeof map.getZoom === "function" && typeof map.setZoom === "function" && map.getZoom() < 4) {
-      map.setZoom(4);
-    }
-  }, [fires, map]);
-
-  return null;
-}
-
-function FocusOnSelectedFire({ fire }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!fire) return;
-    map.setView([fire.lat, fire.lon], 8, { animate: true });
-  }, [fire, map]);
-
-  return null;
-}
 
 export default function App() {
   const [fires, setFires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [confidenceFilter, setConfidenceFilter] = useState("all");
-  const [californiaOnly, setCaliforniaOnly] = useState(true);
+  const [region, setRegion] = useState("ca");
   const [minBrightness, setMinBrightness] = useState("0");
   const [minFrp, setMinFrp] = useState("0");
   const [sortKey, setSortKey] = useState("brightness");
   const [sortDir, setSortDir] = useState("desc");
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [showHeatmap, setShowHeatmap] = useState(true);
+  const [showClusters, setShowClusters] = useState(true);
 
   const parsedMinBrightness = useMemo(() => {
     const parsed = Number(minBrightness);
@@ -257,11 +101,6 @@ export default function App() {
     }
   }, [filteredFires, selectedEventId]);
 
-  const center = useMemo(() => {
-    if (filteredFires.length === 0) return US_CENTER;
-    return [filteredFires[0].lat, filteredFires[0].lon];
-  }, [filteredFires]);
-
   useEffect(() => {
     const controller = new AbortController();
 
@@ -272,7 +111,7 @@ export default function App() {
 
         const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
         const url = new URL(`${apiBase}/fires`, window.location.origin);
-        if (californiaOnly) url.searchParams.set("region", "ca");
+        if (region && region !== "us") url.searchParams.set("region", region);
         const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -292,7 +131,7 @@ export default function App() {
     return () => {
       controller.abort();
     };
-  }, [californiaOnly]);
+  }, [region]);
 
   return (
     <div className="ui-shell">
@@ -303,199 +142,52 @@ export default function App() {
             {loading ? "Loading..." : `${filteredFires.length} points (of ${preparedFires.length} total)`}
           </span>
         </div>
+        {!loading && preparedFires.length > 0 && <StatsBar fires={preparedFires} />}
       </header>
       {isStale && (
         <div data-testid="stale-data-banner" className="stale-banner">
-          ⚠️ Stale data — fire records are more than 7 days old.
+          Stale data — fire records are more than 7 days old.
         </div>
       )}
 
       <div className="main-layout">
-        <section className="controls-panel">
-          <h3>Filters</h3>
-          <div>
-            <span>Region</span>
-            <label htmlFor="ca-toggle" className="checkbox-row" data-testid="ca-toggle-label">
-              <input
-                id="ca-toggle"
-                data-testid="ca-toggle"
-                type="checkbox"
-                checked={californiaOnly}
-                onChange={(e) => setCaliforniaOnly(e.target.checked)}
-              />
-              California only
-            </label>
-            <small>Data shown is US-only; toggle narrows to California.</small>
-          </div>
-          <label>
-            Confidence
-            <select
-              data-testid="confidence-filter"
-              value={confidenceFilter}
-              onChange={(e) => setConfidenceFilter(e.target.value)}
-            >
-              {CONFIDENCE_OPTIONS.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Min brightness
-            <input
-              data-testid="brightness-filter"
-              type="number"
-              value={minBrightness}
-              onChange={(e) => setMinBrightness(e.target.value)}
-            />
-          </label>
-          <label>
-            Min FRP
-            <input
-              data-testid="frp-filter"
-              type="number"
-              value={minFrp}
-              onChange={(e) => setMinFrp(e.target.value)}
-            />
-          </label>
+        <FiltersPanel
+          region={region}
+          onRegionChange={setRegion}
+          confidenceFilter={confidenceFilter}
+          onConfidenceChange={setConfidenceFilter}
+          minBrightness={minBrightness}
+          onMinBrightnessChange={setMinBrightness}
+          minFrp={minFrp}
+          onMinFrpChange={setMinFrp}
+          showHeatmap={showHeatmap}
+          onHeatmapToggle={setShowHeatmap}
+          showClusters={showClusters}
+          onClustersToggle={setShowClusters}
+        />
 
-          <h3>Map Layers</h3>
-          <label htmlFor="heatmap-toggle" className="checkbox-row">
-            <input
-              id="heatmap-toggle"
-              data-testid="heatmap-toggle"
-              type="checkbox"
-              checked={showHeatmap}
-              onChange={(e) => setShowHeatmap(e.target.checked)}
-            />
-            Risk heatmap
-          </label>
-          <small>Heatmap weighted by AI risk score (blue → orange → red).</small>
+        <MapView
+          fires={preparedFires}
+          filteredFires={filteredFires}
+          sortedFires={sortedFires}
+          selectedFire={selectedFire}
+          selectedEventId={selectedEventId}
+          onSelectEvent={setSelectedEventId}
+          showHeatmap={showHeatmap}
+          showClusters={showClusters}
+          loading={loading}
+          err={err}
+        />
 
-          <h3>Legend</h3>
-          <ul className="legend" data-testid="legend">
-            <li>
-              <span className="legend-dot critical" /> Brightness {">="} 350: Critical
-            </li>
-            <li>
-              <span className="legend-dot warning" /> Brightness 320-349: Warning
-            </li>
-            <li>
-              <span className="legend-dot monitor" /> Brightness {"<"} 320: Monitor
-            </li>
-            <li>Marker radius scales with FRP (higher FRP = larger marker)</li>
-          </ul>
-        </section>
-
-        <section className="map-panel">
-          {err ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", backgroundColor: "#1e293b", color: "#f87171", padding: "40px", textAlign: "center", borderRadius: "8px" }}>
-              <h2 style={{ fontSize: "24px", marginBottom: "10px" }}>⚠️ AI Tracking System Offline</h2>
-              <p style={{ color: "#cbd5e1", marginBottom: "20px" }}>
-                We are currently unable to connect to the wildfire database. Please ensure the backend API is actively running.
-              </p>
-              <p style={{ fontSize: "12px", color: "#64748b" }}>Developer Details: {err}</p>
-            </div>
-          ) : (
-            <>
-              {filteredFires.length === 0 && !loading && <div className="overlay-note">No events match filters.</div>}
-              <MapContainer
-                center={center}
-                zoom={5}
-                minZoom={4}
-                maxBounds={[[24, -125], [50, -66]]}
-                maxBoundsViscosity={0.8}
-                className="map-container"
-              >
-                <FitBounds fires={filteredFires} />
-                <FocusOnSelectedFire fire={selectedFire} />
-                <TileLayer
-                  attribution="&copy; OpenStreetMap contributors"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {showHeatmap && <HeatmapLayer fires={filteredFires} />}
-                {sortedFires.map((fire) => {
-                  const selected = fire.id === selectedEventId;
-                  return (
-                    <CircleMarker
-                      key={fire.id}
-                      center={[fire.lat, fire.lon]}
-                      radius={getMarkerRadius(fire)}
-                      pathOptions={{
-                        color: getMarkerColor(fire),
-                        fillColor: getMarkerColor(fire),
-                        fillOpacity: 0.75,
-                        weight: selected ? 3 : 1,
-                      }}
-                      eventHandlers={{ click: () => setSelectedEventId(fire.id) }}
-                    >
-                      <Popup>
-                        <div className="popup-content">
-                          <div><b>Severity:</b> {fire.severity}</div>
-                          <div><b>Risk Score (AI):</b> {fire.risk.toFixed(4)}</div>
-                          <div><b>Lat/Lon:</b> {fire.lat.toFixed(3)}, {fire.lon.toFixed(3)}</div>
-                          <div><b>Brightness:</b> {fire.brightness}</div>
-                          <div><b>FRP:</b> {fire.frp}</div>
-                          <div><b>Confidence:</b> {fire.confidence}</div>
-                          <div><b>Time:</b> {fire.acq_date ?? "N/A"} {fire.acq_time ?? ""}</div>
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                  );
-                })}
-              </MapContainer>
-            </>
-          )}
-        </section>
-
-        <aside className="events-panel">
-          <h3>Events</h3>
-          <div className="sort-controls">
-            <label>
-              Sort by
-              <select data-testid="sort-key" value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
-                <option value="brightness">Brightness</option>
-                <option value="frp">FRP</option>
-                <option value="confidence">Confidence</option>
-                <option value="risk">Risk</option>
-              </select>
-            </label>
-            <button
-              type="button"
-              data-testid="sort-dir"
-              onClick={() => setSortDir((current) => (current === "asc" ? "desc" : "asc"))}
-            >
-              {sortDir === "asc" ? "Ascending" : "Descending"}
-            </button>
-          </div>
-
-          <div className="events-count" data-testid="events-count">
-            {sortedFires.length} events
-          </div>
-          <ul className="events-list">
-            {sortedFires.map((fire) => (
-              <li key={fire.id}>
-                <button
-                  type="button"
-                  className={`event-row ${selectedEventId === fire.id ? "selected" : ""}`}
-                  data-testid="event-row"
-                  onClick={() => setSelectedEventId(fire.id)}
-                >
-                  <div className="event-row-top">
-                    <span className={`severity-pill ${fire.severity}`}>{fire.severity}</span>
-                    <span>{fire.confidence}</span>
-                  </div>
-                  <div>Lat/Lon: {fire.lat.toFixed(2)}, {fire.lon.toFixed(2)}</div>
-                  <div>
-                    Brightness: {fire.brightness} | FRP: {fire.frp}
-                  </div>
-                  <div>Risk (AI): {fire.risk.toFixed(4)}</div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
+        <EventsList
+          sortedFires={sortedFires}
+          selectedEventId={selectedEventId}
+          onSelectEvent={setSelectedEventId}
+          sortKey={sortKey}
+          onSortKeyChange={setSortKey}
+          sortDir={sortDir}
+          onSortDirToggle={() => setSortDir((current) => (current === "asc" ? "desc" : "asc"))}
+        />
       </div>
     </div>
   );
