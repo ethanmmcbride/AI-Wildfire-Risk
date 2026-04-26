@@ -201,7 +201,7 @@ class TestInformationDisclosure:
         response = client.get("/health")
         assert response.status_code == 200
         data = response.json()
-        allowed_keys = {"status", "database_exists", "db_path"}
+        allowed_keys = {"status", "database_exists", "db_path", "model_loaded", "model_path"}
         assert set(data.keys()) == allowed_keys, (
             f"Health endpoint returned unexpected fields: {set(data.keys()) - allowed_keys}"
         )

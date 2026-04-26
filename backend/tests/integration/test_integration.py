@@ -177,20 +177,17 @@ class TestRiskScoringIntegration:
 
     def test_risk_score_formula_correctness(self, client):
         """
-        risk = round(brightness * 0.6 + frp * 0.4, 2)
-        Validates the formula against the known high-confidence record:
-          brightness=380.0, frp=75.0 → risk = round(228.0 + 30.0, 2) = 258.0
+        RF model now produces risk scores in [0, 1].
+        Validates that all returned risk scores are valid probabilities.
         """
         response = client.get("/fires?confidence=high")
         assert response.status_code == 200
         fires = response.json()
-        # Find the record with brightness=380.0
-        target = next((f for f in fires if f["brightness"] == 380.0), None)
-        assert target is not None, "Expected fire with brightness=380.0 not found"
-        expected_risk = round(380.0 * 0.6 + 75.0 * 0.4, 2)
-        assert target["risk"] == expected_risk, (
-            f"Risk mismatch: expected {expected_risk}, got {target['risk']}"
-        )
+        assert len(fires) > 0
+        for fire in fires:
+            assert 0.0 <= fire["risk"] <= 1.0, (
+                f"Risk score out of valid range: {fire['risk']}"
+            )
 
 
 class TestOrderingIntegration:
