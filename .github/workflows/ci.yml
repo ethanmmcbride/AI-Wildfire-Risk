@@ -218,8 +218,10 @@ jobs:
           node-version: "20"
       - name: Install Dependencies
         run: npm ci
+      - name: Lint Frontend (ESLint)
+        run: npm run lint
       - name: Run Frontend Tests
-        run: npm test -- --run
+        run: npm test -- --run --coverage
       - name: Build Frontend
         run: npm run build
       - name: Audit Frontend Dependencies
@@ -285,8 +287,12 @@ jobs:
           "
 
   test-e2e:
-    needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' }}
+    needs: [changes, test-backend, test-frontend]
+    if: >-
+      always() &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true') &&
+      needs.test-backend.result != 'failure' &&
+      needs.test-frontend.result != 'failure'
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -34,6 +34,7 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+frontend/coverage/
 frontend/test-results/
 frontend/playwright-report/
 frontend/blob-report/

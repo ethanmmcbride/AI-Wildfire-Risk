@@ -282,8 +282,9 @@ export default function App() {
         if (controller.signal.aborted) return;
         setErr(String(e));
       } finally {
-        if (controller.signal.aborted) return;
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
     load();
