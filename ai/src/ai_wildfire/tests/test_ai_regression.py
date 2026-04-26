@@ -3,14 +3,19 @@ import pandas as pd
 
 from ai_wildfire.features import build_feature_matrix
 
-FEATURE_COLUMNS = ["bright_ti4", "bright_ti5", "frp", "hour", "lat_bin", "lon_bin"]
+FEATURE_COLUMNS = [
+    "bright_ti4", "bright_ti5", "frp",
+    "hour", "month", "lat_bin", "lon_bin",
+    "wind_speed_kmh", "humidity_pct", "temp_c",
+    "soil_moisture", "vpd_kpa", "et0_mm",
+]
 
 HIGH_CONFIDENCE_VALUES = {"high", "h"}
 
 
 def test_feature_matrix_shape(golden_df):
     X, y = build_feature_matrix(golden_df)
-    assert X.shape == (50, 6)
+    assert X.shape == (50, 13)
     assert len(y) == 50
 
 

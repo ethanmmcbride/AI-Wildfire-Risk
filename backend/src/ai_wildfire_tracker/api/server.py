@@ -7,6 +7,7 @@ import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -14,7 +15,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app):
+    _load_model()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -73,12 +79,6 @@ def _load_model():
     except Exception as exc:
         logger.error("Failed to load RF model: %s", exc)
         return None
-
-
-@app.on_event("startup")
-def startup_event():
-    """Load the RF model when the server starts."""
-    _load_model()
 
 
 # ---------------------------------------------------------------------------

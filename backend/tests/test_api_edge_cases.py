@@ -30,14 +30,15 @@ def client():
     server_module = importlib.reload(server_module)
     return TestClient(server_module.app)
 
-
+"""
+removed compute risk
 @pytest.fixture()
 def compute_risk():
     import ai_wildfire_tracker.api.server as server_module
 
     server_module = importlib.reload(server_module)
     return server_module.compute_risk
-
+"""
 
 def test_get_fires_returns_empty_list_when_db_missing(client):
     response = client.get("/fires")
