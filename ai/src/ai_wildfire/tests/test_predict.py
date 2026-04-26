@@ -17,6 +17,7 @@ def _run_predict(golden_df):
     df_out = df_out.sort_values("pred_score", ascending=False)
     return df_out
 
+
 def test_high_confidence_detections_score_above_threshold():
     """
     After model training, high-confidence detections must score >= 0.5.
@@ -54,9 +55,12 @@ def test_high_confidence_detections_score_above_threshold():
         high_conf = result[result["confidence"] == "h"]
         assert len(high_conf) > 0
         median_score = high_conf["pred_score"].median()
-        assert median_score >= 0.5, f"REG-3 FAILED: median risk score for h-confidence = {median_score}"
+        assert median_score >= 0.5, (
+            f"REG-3 FAILED: median risk score for h-confidence = {median_score}"
+        )
     finally:
         os.unlink(db_path)
+
 
 def test_predict_returns_dataframe_with_scores(golden_df, trained_model_path):
     df_out = _run_predict(golden_df)
