@@ -4,10 +4,19 @@ import pandas as pd
 from ai_wildfire.features import build_feature_matrix
 
 FEATURE_COLUMNS = [
-    "bright_ti4", "bright_ti5", "frp",
-    "hour", "month", "lat_bin", "lon_bin",
-    "wind_speed_kmh", "humidity_pct", "temp_c",
-    "soil_moisture", "vpd_kpa", "et0_mm",
+    "bright_ti4",
+    "bright_ti5",
+    "frp",
+    "hour",
+    "month",
+    "lat_bin",
+    "lon_bin",
+    "wind_speed_kmh",
+    "humidity_pct",
+    "temp_c",
+    "soil_moisture",
+    "vpd_kpa",
+    "et0_mm",
 ]
 
 HIGH_CONFIDENCE_VALUES = {"high", "h"}

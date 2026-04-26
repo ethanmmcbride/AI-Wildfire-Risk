@@ -15,10 +15,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(app):
     _load_model()
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 
