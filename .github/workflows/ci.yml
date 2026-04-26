@@ -9,12 +9,8 @@ on:
       - "test-tracking/**"
       - ".github/workflows/ci.yml"
   pull_request:
-    paths:
-      - "backend/**"
-      - "frontend/**"
-      - "ai/**"
-      - "test-tracking/**"
-      - ".github/workflows/ci.yml"
+    branches:
+      - main
 
 permissions:
   contents: read

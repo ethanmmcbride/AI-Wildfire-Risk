@@ -23,6 +23,7 @@ produced by CI (GitHub Actions run number + short commit SHA).
 | BUG-0003 | Confidence parameter accepts SQL injection payloads without rejection | High | Security | `002-e4f5a6b` | `TestSQLInjection::test_sql_injection_in_confidence_param` | `004-f0a1b2c` | #45 |
 | BUG-0004 | Oversized confidence param not validated — no 400 response returned | Medium | Security | `002-e4f5a6b` | `TestOversizedInput::test_oversized_confidence_param_rejected` | `004-f0a1b2c` | #45 |
 | BUG-0005 | `/health` endpoint SLA violation under repeated load on CI runners | Low | Performance | `003-c7d8e9f` | `TestHealthEndpointSLA::test_health_endpoint_consistent_across_repeated_calls` | `004-f0a1b2c` | #46 |
+| BUG-0006 | `/fires?limit=N` param accepted but ignored — SQL hardcodes LIMIT 1000 | Medium | Unit | `feature/metrics-cd-pipeline` | `TestLimitParameter::test_limit_2_returns_exactly_2_records` | `feature/metrics-cd-pipeline` | #TBD |
 
 ---
 
@@ -110,3 +111,41 @@ fix, not a code defect.
 **Found In Build:** `003-c7d8e9f`  
 **Fixed In Build:** `004-f0a1b2c`  
 **Test Case:** `backend/tests/performance/test_performance.py::TestHealthEndpointSLA::test_health_endpoint_consistent_across_repeated_calls`
+
+---
+
+## Bug Detail: BUG-0006
+
+**Bug ID:** BUG-0006  
+**Title:** `/fires?limit=N` query parameter accepted but silently ignored  
+**Severity:** Medium  
+**Test Type:** Unit / API  
+
+**Description:**  
+The `/fires` endpoint declares a `limit` query parameter (`default=1000, max=5000`) in its
+FastAPI route signature. However, the SQL query always ended with `LIMIT 1000` regardless
+of the caller-supplied value. A client requesting `limit=2` would receive up to 1000 rows,
+making the parameter non-functional.
+
+**Root Cause:** The `limit` variable was never substituted into the SQL query. The query
+string hardcoded the literal `LIMIT 1000` instead of using a parameterized `LIMIT ?` with
+the function argument.
+
+**Fix:**
+```python
+# Before (buggy):
+query += """
+    ORDER BY acq_date DESC, acq_time DESC
+    LIMIT 1000
+"""
+
+# After (fixed):
+query += " ORDER BY acq_date DESC, acq_time DESC LIMIT ?"
+params.append(limit)
+```
+
+**Found In Build:** `feature/metrics-cd-pipeline` (first CI run — test-only commit)  
+**Fixed In Build:** `feature/metrics-cd-pipeline` (second CI run — fix commit)  
+**Test Case:** `backend/tests/test_limit_param.py::TestLimitParameter::test_limit_2_returns_exactly_2_records`  
+**GitHub Actions failure URL:** *(paste URL from Actions tab after first push)*  
+**GitHub Actions passing URL:** *(paste URL from Actions tab after fix push)*

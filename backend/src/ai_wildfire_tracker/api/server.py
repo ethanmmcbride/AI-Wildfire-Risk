@@ -156,10 +156,8 @@ def get_fires(
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
 
-        query += """
-            ORDER BY acq_date DESC, acq_time DESC
-            LIMIT 1000
-        """
+        query += " ORDER BY acq_date DESC, acq_time DESC LIMIT ?"
+        params.append(limit)
 
         rows = con.execute(query, params).fetchall()
         logger.info("Fetched %d fire rows", len(rows))
