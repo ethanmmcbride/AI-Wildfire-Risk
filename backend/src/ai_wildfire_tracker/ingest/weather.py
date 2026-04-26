@@ -22,6 +22,7 @@ import logging
 import os
 import time
 from datetime import datetime, timezone
+from typing import Any, cast
 
 import duckdb
 import pandas as pd
@@ -41,7 +42,7 @@ NWS_MAX_POINTS = int(os.getenv("NWS_MAX_POINTS", "50"))
 
 US_BOUNDS = {
     "min_lat": 24.0,
-    "max_lat": 49.5,
+    "max_lat": 48.5,
     "min_lon": -125.0,
     "max_lon": -66.5,
 }
@@ -83,7 +84,7 @@ def _nws_get(url: str) -> dict | None:
     try:
         resp = SESSION.get(url, timeout=10)
         resp.raise_for_status()
-        return resp.json()
+        return cast(dict[str, Any], resp.json())
     except requests.RequestException as exc:
         logger.warning("NWS request failed for %s: %s", url, exc)
         return None
@@ -167,6 +168,8 @@ def _already_fetched_today(
             """,
             [lat, lon, today],
         ).fetchone()
+        if result is None:
+            return False
         return (result[0] or 0) > 0
     except duckdb.CatalogException:
         return False

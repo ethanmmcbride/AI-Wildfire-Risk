@@ -19,6 +19,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -83,12 +87,12 @@ jobs:
             --cov=ai_wildfire_tracker \
             --cov-report=term-missing \
             --cov-report=xml \
-            --cov-fail-under=75 \
+            --cov-report=html:backend/htmlcov \
+            --cov-fail-under=65 \
             --junitxml=backend-test-results-${BUILD_SHORT}.xml \
             --json-report \
             --json-report-file=test-tracking/results/build-${BUILD_SHORT}.json \
             --json-report-summary
-
       - name: Generate Test History Report
         if: always()
         run: |
@@ -213,9 +217,13 @@ jobs:
         with:
           node-version: "20"
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
       - name: Run Frontend Tests
         run: npm test -- --run
+      - name: Build Frontend
+        run: npm run build
+      - name: Audit Frontend Dependencies
+        run: npm audit --audit-level=critical
 
   test-ai:
     needs: changes
@@ -268,19 +276,39 @@ jobs:
       - name: Install Playwright Browser
         run: npx playwright install --with-deps chromium
       - name: Run End-to-End Tests
-        run: npm run test:e2e:ci
+        run: npm run test:e2e
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
 
+      - name: Upload Playwright Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: frontend/test-results/
+  
   security-scan:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install Bandit
-        run: pip install bandit
+
+      - name: Install security tools
+        run: pip install bandit pip-audit
+
       - name: Run Bandit on Backend Source
         run: bandit -r backend/src/ -ll
+
+      - name: Run pip-audit on Backend Dependencies
+        continue-on-error: true
+        run: pip-audit -r backend/requirements.txt

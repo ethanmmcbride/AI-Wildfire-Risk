@@ -31,12 +31,15 @@ def client():
     return TestClient(server_module.app)
 
 
+"""
+removed compute risk
 @pytest.fixture()
 def compute_risk():
     import ai_wildfire_tracker.api.server as server_module
 
     server_module = importlib.reload(server_module)
     return server_module.compute_risk
+"""
 
 
 def test_get_fires_returns_empty_list_when_db_missing(client):
@@ -230,8 +233,18 @@ def test_health_check_endpoint(client):
     assert response.json()["status"] == "ok"
 
 
+"""
+deleted compute risk from server.py
 def test_compute_risk_logic_boundaries(compute_risk):
     assert compute_risk(350.0, 50.0) == 230.0
     assert compute_risk(0.0, 0.0) == 0.0
     assert compute_risk(None, None) == 0.0
     assert compute_risk(350.0, None) == 210.0
+"""
+
+
+def test_fallback_risk_returns_normalized_score():
+    from ai_wildfire_tracker.api.server import _fallback_risk
+
+    result = _fallback_risk(350.0, 50.0)
+    assert 0.0 <= result <= 1.0

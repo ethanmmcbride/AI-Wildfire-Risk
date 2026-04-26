@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+.env.docker
 
 # ── Python ──────────────────────────────────────────────────────────────────
 .venv/
@@ -33,6 +34,11 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+backend/htmlcov/
+backend/coverage.xml
 
 # ── AI ─────────────────────────────────────────────────────────────
 ai/artifacts/

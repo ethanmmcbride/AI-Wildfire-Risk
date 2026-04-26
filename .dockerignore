@@ -13,6 +13,7 @@ frontend/dist/
 .env
 *.db
 data/
+.env.docker
 
 # IDE & OS
 .git/

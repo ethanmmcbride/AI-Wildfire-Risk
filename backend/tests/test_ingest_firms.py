@@ -62,6 +62,36 @@ def test_ingest_firms_inserts_only_us_rows(monkeypatch, tmp_path):
     assert rows[1] == (36.5, -119.5, 320.0, 280.0, 20.0, "2024-01-02", "1300", "nominal")
 
 
+def test_ingest_firms_deduplicates_on_repeated_run(monkeypatch, tmp_path):
+    db_path = tmp_path / "firms_dedup.db"
+
+    source = pd.DataFrame(
+        {
+            "latitude": [34.0, 36.5],
+            "longitude": [-118.0, -119.5],
+            "bright_ti4": [350.5, 320.0],
+            "bright_ti5": [300.0, 280.0],
+            "frp": [50.0, 20.0],
+            "acq_date": ["2024-01-01", "2024-01-02"],
+            "acq_time": ["1200", "1300"],
+            "confidence": ["high", "nominal"],
+        }
+    )
+
+    monkeypatch.setenv("FIRMS_API_KEY", "fake-key")
+    monkeypatch.setattr(firms, "DB_PATH", str(db_path))
+    monkeypatch.setattr(firms.pd, "read_csv", lambda _: source)
+
+    firms.ingest_firms()
+    firms.ingest_firms()
+
+    con = duckdb.connect(str(db_path))
+    count = con.execute("SELECT COUNT(*) FROM fires").fetchone()[0]
+    con.close()
+
+    assert count == 2
+
+
 def test_ingest_firms_empty_us_result_creates_table_with_no_rows(monkeypatch, tmp_path):
     db_path = tmp_path / "firms_empty.db"
 
