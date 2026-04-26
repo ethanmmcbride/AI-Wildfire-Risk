@@ -125,7 +125,6 @@ function FireMarkers({ fires, selectedEventId, onSelectEvent }) {
 }
 
 export default function MapView({
-  fires,
   filteredFires,
   sortedFires,
   selectedFire,

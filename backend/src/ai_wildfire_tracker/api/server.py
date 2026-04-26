@@ -136,6 +136,9 @@ def compute_risk_batch(rows: list, weather_map: dict, env_map: dict) -> list[flo
     Returns:
         List of float risk scores in [0, 1], one per row.
     """
+    if not rows:
+        return []
+
     model = _load_model()
 
     if model is None:

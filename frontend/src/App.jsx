@@ -176,7 +176,6 @@ export default function App() {
         />
 
         <MapView
-          fires={preparedFires}
           filteredFires={filteredFires}
           sortedFires={sortedFires}
           selectedFire={selectedFire}
