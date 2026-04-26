@@ -1,0 +1,30 @@
+# render.yaml — Infrastructure-as-Code for Render.com deployment
+# Defines the AI Wildfire Risk backend as a web service.
+#
+# To deploy:
+#   1. Sign in at https://render.com and click "New → Blueprint"
+#   2. Connect the ethanmmcbride/AI-Wildfire-Risk GitHub repository
+#   3. Render reads this file and creates the service automatically
+#
+# The deployed URL will be: https://ai-wildfire-risk-backend.onrender.com
+# Health check endpoint:    https://ai-wildfire-risk-backend.onrender.com/health
+# Live metrics endpoint:    https://ai-wildfire-risk-backend.onrender.com/metrics
+
+services:
+  - type: web
+    name: ai-wildfire-risk-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health
+
+    envVars:
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DB_PATH
+        value: /app/wildfire.db
+
+    # Render free-tier spins down after 15 min of inactivity.
+    # The /health endpoint is polled by the CI deploy job to confirm liveness.
+    autoDeploy: false   # Deploys are triggered by the CI pipeline deploy job

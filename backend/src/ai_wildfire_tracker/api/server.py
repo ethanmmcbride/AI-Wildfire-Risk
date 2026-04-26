@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 import duckdb
 from fastapi import FastAPI, HTTPException, Query
@@ -22,6 +23,14 @@ app.add_middleware(
 
 # MODIFIED: Allow env var override for testing
 DB_PATH = os.getenv("TEST_DB_PATH", os.getenv("DB_PATH", "wildfire.db"))
+
+# ---------------------------------------------------------------------------
+# Operational metrics — reset on process restart, visible at GET /metrics
+# ---------------------------------------------------------------------------
+_PROCESS_START = time.time()
+_request_counts: dict[str, int] = {"fires": 0, "health": 0, "metrics": 0}
+_last_fires_response_ms: float | None = None
+_last_health_response_ms: float | None = None
 US_BOUNDS = {
     "min_lat": 24.0,
     "max_lat": 49.5,
@@ -47,10 +56,27 @@ def root():
     return {"message": "AI Wildfire Tracker API is running"}
 
 
+@app.get("/metrics")
+def get_metrics():
+    """Expose real-time operational counters for the live deployment dashboard."""
+    global _last_fires_response_ms, _last_health_response_ms
+    _request_counts["metrics"] += 1
+    return {
+        "uptime_seconds": round(time.time() - _PROCESS_START, 1),
+        "request_counts": dict(_request_counts),
+        "last_fires_response_ms": _last_fires_response_ms,
+        "last_health_response_ms": _last_health_response_ms,
+    }
+
+
 @app.get("/health")
 def health():
+    global _last_health_response_ms
+    _request_counts["health"] += 1
+    _t0 = time.perf_counter()
     db_exists = os.path.exists(DB_PATH)
     logger.info("Health check requested. db_exists=%s db_path=%s", db_exists, DB_PATH)
+    _last_health_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
     return {
         "status": "ok",
         "database_exists": db_exists,
@@ -64,6 +90,9 @@ def get_fires(
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
     limit: int = Query(default=1000, ge=1, le=5000, description="Max results to return"),
 ):
+    global _last_fires_response_ms
+    _request_counts["fires"] += 1
+    _t0 = time.perf_counter()
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
     valid_regions = ["ca", "us", None]
@@ -144,7 +173,7 @@ def get_fires(
     finally:
         con.close()
 
-    return [
+    result = [
         {
             "lat": r[0],
             "lon": r[1],
@@ -157,3 +186,5 @@ def get_fires(
         }
         for r in rows
     ]
+    _last_fires_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
+    return result

@@ -284,3 +284,77 @@ jobs:
         run: pip install bandit
       - name: Run Bandit on Backend Source
         run: bandit -r backend/src/ -ll
+
+  # ---------------------------------------------------------------------------
+  # Continuous Deployment — runs only on main-branch pushes after all tests pass
+  # Builds the backend Docker image, pushes it to GitHub Container Registry
+  # (ghcr.io), and optionally triggers a Render.com deploy hook.
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Build & Push Docker Image (CD)
+    needs: [test-backend, test-performance, test-security, test-integration]
+    if: >
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tags
+        id: tags
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          BUILD_TAG="${{ github.run_number }}-${SHORT_SHA}"
+          echo "build_tag=${BUILD_TAG}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${{ github.repository_owner }}/ai-wildfire-risk-backend" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ steps.tags.outputs.image }}:latest
+            ${{ steps.tags.outputs.image }}:${{ steps.tags.outputs.build_tag }}
+
+      - name: Trigger Render deployment
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+        run: |
+          echo "Triggering Render deploy for build ${{ steps.tags.outputs.build_tag }}"
+          curl --silent --show-error --fail \
+            "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+            && echo "Render deploy triggered successfully"
+
+      - name: Verify live deployment health
+        if: ${{ secrets.RENDER_SERVICE_URL != '' }}
+        run: |
+          echo "Waiting 60s for Render to spin up..."
+          sleep 60
+          curl --silent --show-error --fail \
+            "${{ secrets.RENDER_SERVICE_URL }}/health" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print('Health:', d); assert d['status']=='ok'"
+          echo "Live deployment verified healthy"
+
+      - name: Write deployment summary
+        run: |
+          BUILD_TAG="${{ steps.tags.outputs.build_tag }}"
+          IMAGE="${{ steps.tags.outputs.image }}"
+          echo "## Deployment Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build tag | \`${BUILD_TAG}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image | \`${IMAGE}:${BUILD_TAG}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Registry | ghcr.io |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Triggered by | ${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
