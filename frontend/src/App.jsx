@@ -224,6 +224,10 @@ export default function App() {
         const apiBase = `${API_BASE || "/api"}`.replace(/\/$/, "");
         const url = new URL(`${apiBase}/fires`, window.location.origin);
         if (californiaOnly) url.searchParams.set("region", "ca");
+
+        console.log("API_BASE =", API_BASE);
+        console.log("Fetching URL =", url.toString());
+        
         const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -233,9 +237,10 @@ export default function App() {
         if (controller.signal.aborted) return;
         setErr(String(e));
       } finally {
-        if (controller.signal.aborted) return;
+          if (!controller.signal.aborted) {
         setLoading(false);
-      }
+          }
+        }
     }
     load();
 
@@ -349,9 +354,10 @@ export default function App() {
                 <FitBounds fires={filteredFires} />
                 <FocusOnSelectedFire fire={selectedFire} />
                 <TileLayer
-                  attribution="&copy; OpenStreetMap contributors"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 
+                contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+/>
 
                 {sortedFires.map((fire) => {
                   const selected = fire.id === selectedEventId;

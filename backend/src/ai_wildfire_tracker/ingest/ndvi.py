@@ -93,14 +93,11 @@ def fetch_environmental_conditions(lat: float, lon: float) -> dict | None:
 
     Returns a flat dict with soil_moisture, vpd_kpa, et0_mm or None on failure.
     """
-    params = {
+    params: dict[str, str | float | int] = {
         "latitude": lat,
         "longitude": lon,
         "hourly": "soil_moisture_0_to_1cm",
-        "daily": [
-            "vapor_pressure_deficit_max",
-            "et0_fao_evapotranspiration",
-        ],
+        "daily": "vapor_pressure_deficit_max,et0_fao_evapotranspiration",
         "timezone": "America/Los_Angeles",
         "forecast_days": 1,
     }
@@ -149,6 +146,8 @@ def _already_fetched_today(
             """,
             [lat, lon, today],
         ).fetchone()
+        if result is None:
+            return False
         return (result[0] or 0) > 0
     except duckdb.CatalogException:
         return False

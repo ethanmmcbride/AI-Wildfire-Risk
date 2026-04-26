@@ -135,6 +135,33 @@ def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
     assert rows[0][6] == "nominal"
 
 
+def test_ingest_noaa_hms_deduplicates_on_repeated_run(monkeypatch, tmp_path):
+    db_path = tmp_path / "noaa_dedup.db"
+    source = pd.DataFrame(
+        {
+            "lat": [36.0, 38.0],
+            "lon": [-120.0, -122.0],
+            "temperature": [310.0, 325.0],
+            "frp": [9.5, 18.0],
+            "acq_date": ["2024-02-01", "2024-02-01"],
+            "acq_time": ["0915", "1030"],
+        }
+    )
+
+    monkeypatch.setattr(noaa_hms, "DB_PATH", str(db_path))
+    monkeypatch.setattr(noaa_hms, "NOAA_HMS_CSV_URL", "https://example.test/noaa.csv")
+    monkeypatch.setattr(noaa_hms.pd, "read_csv", lambda _: source)
+
+    noaa_hms.ingest_noaa_hms()
+    noaa_hms.ingest_noaa_hms()
+
+    con = duckdb.connect(str(db_path))
+    count = con.execute("SELECT COUNT(*) FROM fires").fetchone()[0]
+    con.close()
+
+    assert count == 2
+
+
 def test_ingest_noaa_hms_requires_url(monkeypatch):
     monkeypatch.setattr(noaa_hms, "NOAA_HMS_CSV_URL", None)
 
