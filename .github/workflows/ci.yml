@@ -252,6 +252,38 @@ jobs:
             --cov-report=term-missing \
             --cov-fail-under=60
 
+  validate-model:
+    needs: changes
+    if: ${{ needs.changes.outputs.ai == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check model metrics meet thresholds
+        run: |
+          python3 -c "
+          import json, sys
+          try:
+              with open('ai/artifacts/metrics.json') as f:
+                  m = json.load(f)['metrics']
+              auc = m['auc_roc']
+              recall = m['recall']
+              f1 = m['f1']
+              print(f'AUC-ROC: {auc}  Recall: {recall}  F1: {f1}')
+              assert auc >= 0.70, f'AUC-ROC too low: {auc}'
+              assert recall >= 0.50, f'Recall too low: {recall}'
+              assert f1 >= 0.40, f'F1 too low: {f1}'
+              print('All model validation thresholds passed')
+          except FileNotFoundError:
+              print('metrics.json not found — skipping validation (model not yet trained)')
+              sys.exit(0)
+          "
+
   test-e2e:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true' }}

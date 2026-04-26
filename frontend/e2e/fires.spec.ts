@@ -68,6 +68,12 @@ test.describe("AI Wildfire Tracker E2E", () => {
     await expect(page.getByTestId("event-row")).toHaveCount(2);
   });
 
+  test("heatmap toggle is visible and enabled by default", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("heatmap-toggle")).toBeVisible();
+    await expect(page.getByTestId("heatmap-toggle")).toBeChecked();
+  });
+
   test("shows stale-data banner when fire records are old", async ({ page }) => {
   await page.route("**/fires*", async (route) => {
     await route.fulfill({
