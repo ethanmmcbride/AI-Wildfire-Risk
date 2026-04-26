@@ -134,6 +134,7 @@ def test_ingest_noaa_hms_inserts_normalized_rows(monkeypatch, tmp_path):
     assert rows[0][5] == "0915"
     assert rows[0][6] == "nominal"
 
+
 def test_ingest_noaa_hms_deduplicates_on_repeated_run(monkeypatch, tmp_path):
     db_path = tmp_path / "noaa_dedup.db"
     source = pd.DataFrame(
@@ -159,6 +160,7 @@ def test_ingest_noaa_hms_deduplicates_on_repeated_run(monkeypatch, tmp_path):
     con.close()
 
     assert count == 2
+
 
 def test_ingest_noaa_hms_requires_url(monkeypatch):
     monkeypatch.setattr(noaa_hms, "NOAA_HMS_CSV_URL", None)

@@ -61,6 +61,7 @@ def test_ingest_firms_inserts_only_us_rows(monkeypatch, tmp_path):
     assert rows[0] == (34.0, -118.0, 350.5, 300.0, 50.0, "2024-01-01", "1200", "high")
     assert rows[1] == (36.5, -119.5, 320.0, 280.0, 20.0, "2024-01-02", "1300", "nominal")
 
+
 def test_ingest_firms_deduplicates_on_repeated_run(monkeypatch, tmp_path):
     db_path = tmp_path / "firms_dedup.db"
 
@@ -89,6 +90,7 @@ def test_ingest_firms_deduplicates_on_repeated_run(monkeypatch, tmp_path):
     con.close()
 
     assert count == 2
+
 
 def test_ingest_firms_empty_us_result_creates_table_with_no_rows(monkeypatch, tmp_path):
     db_path = tmp_path / "firms_empty.db"
