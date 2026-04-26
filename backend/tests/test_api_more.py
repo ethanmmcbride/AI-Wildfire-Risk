@@ -50,17 +50,28 @@ def setup_teardown_db(tmp_path, monkeypatch):
     yield
 
 
-def test_get_fires_confidence_no_match_returns_empty_list():
+def test_get_fires_confidence_low_returns_matching_record():
+    response = client.get("/fires?confidence=low")
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["confidence"].lower() == "low"
+
+
+def test_get_fires_region_ca_and_confidence_low_returns_matching_record():
+    response = client.get("/fires?region=ca&confidence=low")
+    assert response.status_code == 200
+
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["confidence"].lower() == "low"
+    assert 32.5 <= data[0]["lat"] <= 42.1
+    assert -124.5 <= data[0]["lon"] <= -114.0
+
+def test_get_fires_invalid_confidence_returns_400():
     response = client.get("/fires?confidence=veryhigh")
-    assert response.status_code == 200
-    assert response.json() == []
-
-
-def test_get_fires_valid_region_with_no_match_returns_empty_list():
-    response = client.get("/fires?region=ca&confidence=veryhigh")
-    assert response.status_code == 200
-    assert response.json() == []
-
+    assert response.status_code == 400
 
 def test_fire_values_have_expected_types():
     response = client.get("/fires")
