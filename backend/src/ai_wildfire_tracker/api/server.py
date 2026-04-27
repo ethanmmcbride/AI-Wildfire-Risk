@@ -1,7 +1,12 @@
 import logging
 import os
+import time
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 import duckdb
+import joblib
+import numpy as np
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,35 +16,262 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app):
+    _load_model()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["*"],  # Lock this down to GET requests only
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# MODIFIED: Allow env var override for testing
 DB_PATH = os.getenv("TEST_DB_PATH", os.getenv("DB_PATH", "wildfire.db"))
-US_BOUNDS = {
-    "min_lat": 24.0,
-    "max_lat": 49.5,
-    "min_lon": -125.0,
-    "max_lon": -66.5,
-}
-CA_BOUNDS = {
-    "min_lat": 32.5,
-    "max_lat": 42.1,
-    "min_lon": -124.5,
-    "max_lon": -114.0,
+
+# ---------------------------------------------------------------------------
+# Operational metrics — module-level, reset on process restart
+# ---------------------------------------------------------------------------
+_PROCESS_START = time.time()
+_request_counts: dict[str, int] = {"fires": 0, "health": 0, "metrics": 0}
+_last_fires_response_ms: float | None = None
+_last_health_response_ms: float | None = None
+
+# Model path — defaults to ai/artifacts relative to project root.
+# Override with MODEL_PATH env var for different environments.
+_DEFAULT_MODEL_PATH = (
+    Path(__file__).parent.parent.parent.parent.parent / "ai" / "artifacts" / "baseline_model.joblib"
+)
+MODEL_PATH = Path(os.getenv("MODEL_PATH", str(_DEFAULT_MODEL_PATH)))
+
+REGION_BOUNDS = {
+    "us": {"min_lat": 24.0, "max_lat": 49.5, "min_lon": -125.0, "max_lon": -66.5},
+    "ca": {"min_lat": 32.5, "max_lat": 42.1, "min_lon": -124.5, "max_lon": -114.0},
+    "fl": {"min_lat": 24.5, "max_lat": 31.0, "min_lon": -87.6, "max_lon": -80.0},
+    "tx": {"min_lat": 25.8, "max_lat": 36.5, "min_lon": -106.6, "max_lon": -93.5},
+    "or": {"min_lat": 42.0, "max_lat": 46.3, "min_lon": -124.6, "max_lon": -116.5},
+    "wa": {"min_lat": 45.5, "max_lat": 49.0, "min_lon": -124.8, "max_lon": -116.9},
+    "az": {"min_lat": 31.3, "max_lat": 37.0, "min_lon": -114.8, "max_lon": -109.0},
+    "co": {"min_lat": 37.0, "max_lat": 41.0, "min_lon": -109.1, "max_lon": -102.0},
+    "ga": {"min_lat": 30.4, "max_lat": 35.0, "min_lon": -85.6, "max_lon": -80.8},
 }
 
+US_BOUNDS = REGION_BOUNDS["us"]
+CA_BOUNDS = REGION_BOUNDS["ca"]
 
-def compute_risk(brightness: float | None, frp: float | None) -> float:
+# ---------------------------------------------------------------------------
+# Model loading — loaded once at startup, not on every request
+# ---------------------------------------------------------------------------
+
+_model = None
+
+
+def _load_model():
+    """
+    Load the trained Random Forest model from disk.
+    Called once at startup. Returns None if model file doesn't exist,
+    in which case the fallback formula is used.
+    """
+    global _model
+    if _model is not None:
+        return _model
+
+    if not MODEL_PATH.exists():
+        logger.warning("RF model not found at %s — using brightness formula fallback", MODEL_PATH)
+        return None
+
+    try:
+        _model = joblib.load(MODEL_PATH)
+        logger.info("RF model loaded from %s", MODEL_PATH)
+        return _model
+    except Exception as exc:
+        logger.error("Failed to load RF model: %s", exc)
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Risk scoring
+# ---------------------------------------------------------------------------
+
+# Feature order must match FEATURE_COLS in features.py exactly
+_FEATURE_ORDER = [
+    "bright_ti4",
+    "bright_ti5",
+    "frp",
+    "hour",
+    "month",
+    "lat_bin",
+    "lon_bin",
+    "wind_speed_kmh",
+    "humidity_pct",
+    "temp_c",
+    "soil_moisture",
+    "vpd_kpa",
+    "et0_mm",
+]
+
+
+def _fallback_risk(brightness: float, frp: float) -> float:
+    """
+    Fallback risk formula used when RF model is unavailable.
+    Returns a normalized score in [0, 1] based on brightness and FRP.
+    Kept as a safety net — the RF model is always preferred.
+    """
     b = float(brightness or 0.0)
     f = float(frp or 0.0)
-    return round((b * 0.6) + (f * 0.4), 2)
+    raw = (b * 0.6) + (f * 0.4)
+    # Normalize to 0-1 range (typical max brightness ~500, frp ~200)
+    return round(min(raw / 350.0, 1.0), 4)
+
+
+def compute_risk_batch(rows: list, weather_map: dict, env_map: dict) -> list[float]:
+    """
+    Compute RF risk scores for a batch of fire rows.
+    Falls back to brightness formula if model is unavailable.
+
+    Args:
+        rows: List of DB rows (lat, lon, bright_ti4, bright_ti5, frp,
+              confidence, acq_date, acq_time)
+        weather_map: Dict keyed by (round(lat,2), round(lon,2)) →
+                     {wind_speed_kmh, humidity_pct, temp_c}
+        env_map:     Dict keyed by (round(lat,2), round(lon,2)) →
+                     {soil_moisture, vpd_kpa, et0_mm}
+
+    Returns:
+        List of float risk scores in [0, 1], one per row.
+    """
+    if not rows:
+        return []
+
+    model = _load_model()
+
+    if model is None:
+        return [_fallback_risk(r[2], r[4]) for r in rows]
+
+    from datetime import datetime
+
+    features = []
+    for r in rows:
+        lat, lon = float(r[0]), float(r[1])
+        bright_ti4 = float(r[2] or 0)
+        bright_ti5 = float(r[3] or 0)
+        frp = float(r[4] or 0)
+        acq_date = str(r[6] or "")
+        acq_time = str(r[7] or "0000").zfill(4)
+
+        # Temporal features
+        try:
+            dt = datetime.strptime(f"{acq_date} {acq_time}", "%Y-%m-%d %H%M")
+            hour = dt.hour
+            month = dt.month
+        except ValueError:
+            hour, month = 0, 0
+
+        # Spatial bins
+        lat_bin = int(lat // 1)
+        lon_bin = int(lon // 1)
+
+        # Weather features — look up by rounded lat/lon
+        key = (round(lat, 2), round(lon, 2))
+        w = weather_map.get(key, {})
+        wind_speed_kmh = float(w.get("wind_speed_kmh", 0.0))
+        humidity_pct = float(w.get("humidity_pct", 0.0))
+        temp_c = float(w.get("temp_c", 0.0))
+
+        # Environmental features
+        e = env_map.get(key, {})
+        soil_moisture = float(e.get("soil_moisture", 0.0))
+        vpd_kpa = float(e.get("vpd_kpa", 0.0))
+        et0_mm = float(e.get("et0_mm", 0.0))
+
+        features.append(
+            [
+                bright_ti4,
+                bright_ti5,
+                frp,
+                hour,
+                month,
+                lat_bin,
+                lon_bin,
+                wind_speed_kmh,
+                humidity_pct,
+                temp_c,
+                soil_moisture,
+                vpd_kpa,
+                et0_mm,
+            ]
+        )
+
+    X = np.array(features, dtype=float)  # noqa: N806 — X is standard ML notation for feature matrix
+    probs = model.predict_proba(X)[:, 1]
+    return [round(float(p), 4) for p in probs]
+
+
+# ---------------------------------------------------------------------------
+# Helper: load weather + environmental lookups from DB
+# ---------------------------------------------------------------------------
+
+
+def _build_weather_map(con: duckdb.DuckDBPyConnection) -> dict:
+    """Build a lat/lon → weather dict from weather_observations table."""
+    try:
+        rows = con.execute(
+            """
+            SELECT
+                ROUND(latitude, 2),
+                ROUND(longitude, 2),
+                wind_speed_kmh,
+                humidity_pct,
+                temp_c
+            FROM weather_observations
+            """
+        ).fetchall()
+        return {
+            (r[0], r[1]): {
+                "wind_speed_kmh": r[2],
+                "humidity_pct": r[3],
+                "temp_c": r[4],
+            }
+            for r in rows
+        }
+    except duckdb.CatalogException:
+        return {}
+
+
+def _build_env_map(con: duckdb.DuckDBPyConnection) -> dict:
+    """Build a lat/lon → environmental dict from environmental_conditions table."""
+    try:
+        rows = con.execute(
+            """
+            SELECT
+                ROUND(latitude, 2),
+                ROUND(longitude, 2),
+                soil_moisture,
+                vpd_kpa,
+                et0_mm
+            FROM environmental_conditions
+            """
+        ).fetchall()
+        return {
+            (r[0], r[1]): {
+                "soil_moisture": r[2],
+                "vpd_kpa": r[3],
+                "et0_mm": r[4],
+            }
+            for r in rows
+        }
+    except duckdb.CatalogException:
+        return {}
+
+
+# ---------------------------------------------------------------------------
+# API routes
+# ---------------------------------------------------------------------------
 
 
 @app.get("/")
@@ -49,12 +281,31 @@ def root():
 
 @app.get("/health")
 def health():
+    global _last_health_response_ms
+    _t0 = time.perf_counter()
+    _request_counts["health"] += 1
     db_exists = os.path.exists(DB_PATH)
-    logger.info("Health check requested. db_exists=%s db_path=%s", db_exists, DB_PATH)
-    return {
+    model_loaded = _model is not None
+    logger.info("Health check. db_exists=%s model_loaded=%s", db_exists, model_loaded)
+    result = {
         "status": "ok",
         "database_exists": db_exists,
         "db_path": DB_PATH,
+        "model_loaded": model_loaded,
+        "model_path": str(MODEL_PATH),
+    }
+    _last_health_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
+    return result
+
+
+@app.get("/metrics")
+def get_metrics():
+    _request_counts["metrics"] += 1
+    return {
+        "uptime_seconds": round(time.time() - _PROCESS_START, 1),
+        "request_counts": dict(_request_counts),
+        "last_fires_response_ms": _last_fires_response_ms,
+        "last_health_response_ms": _last_health_response_ms,
     }
 
 
@@ -62,15 +313,17 @@ def health():
 def get_fires(
     confidence: str | None = Query(default=None, description="Filter by confidence"),
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
-    limit: int = Query(default=1000, ge=1, le=5000, description="Max results to return"),
 ):
+    global _last_fires_response_ms
+    _t0 = time.perf_counter()
+    _request_counts["fires"] += 1
     logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
 
-    valid_regions = ["ca", "us", None]
+    valid_regions = list(REGION_BOUNDS.keys())
     if region is not None and region.lower() not in valid_regions:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid region '{region}'. Must be one of: ca, us",
+            detail=f"Invalid region '{region}'. Must be one of: {', '.join(valid_regions)}",
         )
 
     valid_confidences = ["high", "nominal", "low"]
@@ -86,8 +339,12 @@ def get_fires(
 
     con = duckdb.connect(DB_PATH)
     try:
+        # Fetch fire rows — now includes bright_ti5 and acq_time for RF features
         query = """
-            SELECT latitude, longitude, bright_ti4, frp, confidence, acq_date, acq_time
+            SELECT
+                latitude, longitude,
+                bright_ti4, bright_ti5, frp,
+                confidence, acq_date, acq_time
             FROM fires
         """
         params: list[object] = []
@@ -108,32 +365,35 @@ def get_fires(
             where_clauses.append("lower(confidence) = lower(?)")
             params.append(confidence)
 
-        if region and region.lower() == "ca":
-            where_clauses.extend(
-                [
-                    "latitude BETWEEN ? AND ?",
-                    "longitude BETWEEN ? AND ?",
-                ]
-            )
-            params.extend(
-                [
-                    CA_BOUNDS["min_lat"],
-                    CA_BOUNDS["max_lat"],
-                    CA_BOUNDS["min_lon"],
-                    CA_BOUNDS["max_lon"],
-                ]
-            )
+        if region and region.lower() != "us":
+            bounds = REGION_BOUNDS.get(region.lower())
+            if bounds:
+                where_clauses.extend(
+                    [
+                        "latitude BETWEEN ? AND ?",
+                        "longitude BETWEEN ? AND ?",
+                    ]
+                )
+                params.extend(
+                    [
+                        bounds["min_lat"],
+                        bounds["max_lat"],
+                        bounds["min_lon"],
+                        bounds["max_lon"],
+                    ]
+                )
 
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
 
-        query += """
-            ORDER BY acq_date DESC, acq_time DESC
-            LIMIT 1000
-        """
+        query += " ORDER BY acq_date DESC, acq_time DESC LIMIT 1000"
 
         rows = con.execute(query, params).fetchall()
         logger.info("Fetched %d fire rows", len(rows))
+
+        # Load weather + environmental lookups for RF feature building
+        weather_map = _build_weather_map(con)
+        env_map = _build_env_map(con)
 
     except duckdb.CatalogException:
         logger.warning("Table 'fires' does not exist yet")
@@ -144,16 +404,21 @@ def get_fires(
     finally:
         con.close()
 
-    return [
+    # Compute RF risk scores for all rows in one batch
+    risk_scores = compute_risk_batch(rows, weather_map, env_map)
+
+    result = [
         {
             "lat": r[0],
             "lon": r[1],
             "brightness": r[2],
-            "frp": r[3],
-            "confidence": r[4],
-            "acq_date": r[5],
-            "acq_time": r[6],
-            "risk": compute_risk(r[2], r[3]),
+            "frp": r[4],
+            "confidence": r[5],
+            "acq_date": r[6],
+            "acq_time": r[7],
+            "risk": risk_scores[i],
         }
-        for r in rows
+        for i, r in enumerate(rows)
     ]
+    _last_fires_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
+    return result

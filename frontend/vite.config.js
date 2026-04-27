@@ -20,5 +20,11 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./src/setupTests.js",
     exclude: [...configDefaults.exclude, "e2e/**"],
+    coverage: {
+      provider: "v8",
+      thresholds: {
+        lines: 60,
+      },
+    },
   },
 });

@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ai-wildfire-risk-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: DB_PATH
+        value: /data/wildfire.db
+      - key: LOG_LEVEL
+        value: INFO

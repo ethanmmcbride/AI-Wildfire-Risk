@@ -85,9 +85,12 @@ def setup_perf_db():
 @pytest.fixture()
 def client(monkeypatch):
     """TestClient with DB_PATH patched to the performance test database.
-    monkeypatch automatically restores DB_PATH after each test."""
+    monkeypatch automatically restores DB_PATH after each test.
+    A warm-up request ensures the model is loaded before timing begins."""
     monkeypatch.setattr(server_module, "DB_PATH", PERF_TEST_DB)
-    return TestClient(server_module.app)
+    c = TestClient(server_module.app)
+    c.get("/fires")
+    return c
 
 
 def measure_response_time(client: TestClient, url: str) -> float:

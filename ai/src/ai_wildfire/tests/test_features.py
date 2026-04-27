@@ -29,7 +29,14 @@ def test_build_feature_matrix_returns_expected_columns():
         "bright_ti5",
         "frp",
         "hour",
+        "month",
         "lat_bin",
         "lon_bin",
+        "wind_speed_kmh",
+        "humidity_pct",
+        "temp_c",
+        "soil_moisture",
+        "vpd_kpa",
+        "et0_mm",
     ]
     assert y.tolist() == [1]

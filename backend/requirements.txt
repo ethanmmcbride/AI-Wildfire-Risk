@@ -9,3 +9,6 @@ pandas==2.2.0
 duckdb>=0.10.0
 apscheduler>=3.10.4
 pytest-cov>=4.1.0
+joblib
+numpy
+scikit-learn
