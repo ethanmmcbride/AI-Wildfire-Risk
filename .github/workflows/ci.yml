@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -350,3 +351,46 @@ jobs:
       - name: Run pip-audit on Backend Dependencies
         continue-on-error: true
         run: pip-audit -r backend/requirements.txt
+
+  deploy:
+    needs: [changes, test-backend, test-performance, test-security, test-integration]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push' &&
+      needs.test-backend.result == 'success' &&
+      needs.test-performance.result == 'success' &&
+      needs.test-security.result == 'success' &&
+      needs.test-integration.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend Docker image
+        run: |
+          BUILD_SHORT="${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+          IMAGE="ghcr.io/${{ github.repository_owner }}/ai-wildfire-risk-backend"
+          docker build -t "${IMAGE}:latest" -t "${IMAGE}:${BUILD_SHORT}" ./backend
+          docker push "${IMAGE}:latest"
+          docker push "${IMAGE}:${BUILD_SHORT}"
+          echo "Pushed ${IMAGE}:${BUILD_SHORT}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Trigger Render deploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
+        run: |
+          curl -s "${{ secrets.RENDER_DEPLOY_HOOK }}" | jq .
+          echo "Render deploy triggered" >> $GITHUB_STEP_SUMMARY
+
+      - name: Write deploy summary
+        run: |
+          BUILD_SHORT="${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+          echo "## Deployment — build ${BUILD_SHORT}" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: \`ghcr.io/${{ github.repository_owner }}/ai-wildfire-risk-backend:${BUILD_SHORT}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- All test gates passed before deploy" >> $GITHUB_STEP_SUMMARY

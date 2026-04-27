@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -32,6 +33,14 @@ app.add_middleware(
 )
 
 DB_PATH = os.getenv("TEST_DB_PATH", os.getenv("DB_PATH", "wildfire.db"))
+
+# ---------------------------------------------------------------------------
+# Operational metrics — module-level, reset on process restart
+# ---------------------------------------------------------------------------
+_PROCESS_START = time.time()
+_request_counts: dict[str, int] = {"fires": 0, "health": 0, "metrics": 0}
+_last_fires_response_ms: float | None = None
+_last_health_response_ms: float | None = None
 
 # Model path — defaults to ai/artifacts relative to project root.
 # Override with MODEL_PATH env var for different environments.
@@ -340,6 +349,9 @@ def root():
 
 @app.get("/health")
 def health():
+    global _last_health_response_ms
+    _t0 = time.perf_counter()
+    _request_counts["health"] += 1
     db_exists = os.path.exists(DB_PATH)
     try:
         model_loaded = _load_model() is not None
@@ -352,7 +364,7 @@ def health():
         model_loaded,
         _model_status,
     )
-    return {
+    result = {
         "status": _health_status(model_loaded),
         "database_exists": db_exists,
         "db_path": DB_PATH,
@@ -361,6 +373,19 @@ def health():
         "model_status": _model_status,
         "fallback_enabled": _fallback_enabled(),
     }
+    _last_health_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
+    return result
+
+
+@app.get("/metrics")
+def get_metrics():
+    _request_counts["metrics"] += 1
+    return {
+        "uptime_seconds": round(time.time() - _PROCESS_START, 1),
+        "request_counts": dict(_request_counts),
+        "last_fires_response_ms": _last_fires_response_ms,
+        "last_health_response_ms": _last_health_response_ms,
+    }
 
 
 @app.get("/fires")
@@ -368,112 +393,114 @@ def get_fires(
     confidence: str | None = Query(default=None, description="Filter by confidence"),
     region: str | None = Query(default=None, description="Region filter, e.g. 'ca'"),
 ):
-    logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
-
-    valid_regions = list(REGION_BOUNDS.keys())
-    if region is not None and region.lower() not in valid_regions:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid region '{region}'. Must be one of: {', '.join(valid_regions)}",
-        )
-
-    valid_confidences = ["high", "nominal", "low"]
-    if confidence is not None and confidence.lower() not in valid_confidences:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid confidence '{confidence}'. Must be one of: high, nominal, low",
-        )
-
-    if not os.path.exists(DB_PATH):
-        logger.warning("Database file does not exist: %s", DB_PATH)
-        return []
-
-    con = duckdb.connect(DB_PATH)
+    global _last_fires_response_ms
+    _t0 = time.perf_counter()
+    _request_counts["fires"] += 1
     try:
-        # Fetch fire rows — now includes bright_ti5 and acq_time for RF features
-        query = """
-            SELECT
-                latitude, longitude,
-                bright_ti4, bright_ti5, frp,
-                confidence, acq_date, acq_time
-            FROM fires
-        """
-        params: list[object] = []
-        where_clauses: list[str] = [
-            "latitude BETWEEN ? AND ?",
-            "longitude BETWEEN ? AND ?",
-        ]
-        params.extend(
-            [
-                US_BOUNDS["min_lat"],
-                US_BOUNDS["max_lat"],
-                US_BOUNDS["min_lon"],
-                US_BOUNDS["max_lon"],
+        logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
+
+        valid_regions = list(REGION_BOUNDS.keys())
+        if region is not None and region.lower() not in valid_regions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid region '{region}'. Must be one of: {', '.join(valid_regions)}",
+            )
+
+        valid_confidences = ["high", "nominal", "low"]
+        if confidence is not None and confidence.lower() not in valid_confidences:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid confidence '{confidence}'. Must be one of: high, nominal, low",
+            )
+
+        if not os.path.exists(DB_PATH):
+            logger.warning("Database file does not exist: %s", DB_PATH)
+            return []
+
+        con = duckdb.connect(DB_PATH)
+        try:
+            query = """
+                SELECT
+                    latitude, longitude,
+                    bright_ti4, bright_ti5, frp,
+                    confidence, acq_date, acq_time
+                FROM fires
+            """
+            params: list[object] = []
+            where_clauses: list[str] = [
+                "latitude BETWEEN ? AND ?",
+                "longitude BETWEEN ? AND ?",
             ]
-        )
+            params.extend(
+                [
+                    US_BOUNDS["min_lat"],
+                    US_BOUNDS["max_lat"],
+                    US_BOUNDS["min_lon"],
+                    US_BOUNDS["max_lon"],
+                ]
+            )
 
-        if confidence:
-            where_clauses.append("lower(confidence) = lower(?)")
-            params.append(confidence)
+            if confidence:
+                where_clauses.append("lower(confidence) = lower(?)")
+                params.append(confidence)
 
-        if region and region.lower() != "us":
-            bounds = REGION_BOUNDS.get(region.lower())
-            if bounds:
-                where_clauses.extend(
-                    [
-                        "latitude BETWEEN ? AND ?",
-                        "longitude BETWEEN ? AND ?",
-                    ]
-                )
-                params.extend(
-                    [
-                        bounds["min_lat"],
-                        bounds["max_lat"],
-                        bounds["min_lon"],
-                        bounds["max_lon"],
-                    ]
-                )
+            if region and region.lower() != "us":
+                bounds = REGION_BOUNDS.get(region.lower())
+                if bounds:
+                    where_clauses.extend(
+                        [
+                            "latitude BETWEEN ? AND ?",
+                            "longitude BETWEEN ? AND ?",
+                        ]
+                    )
+                    params.extend(
+                        [
+                            bounds["min_lat"],
+                            bounds["max_lat"],
+                            bounds["min_lon"],
+                            bounds["max_lon"],
+                        ]
+                    )
 
-        if where_clauses:
-            query += " WHERE " + " AND ".join(where_clauses)
+            if where_clauses:
+                query += " WHERE " + " AND ".join(where_clauses)
 
-        query += " ORDER BY acq_date DESC, acq_time DESC LIMIT 1000"
+            query += " ORDER BY acq_date DESC, acq_time DESC LIMIT 1000"
 
-        rows = con.execute(query, params).fetchall()
-        logger.info("Fetched %d fire rows", len(rows))
+            rows = con.execute(query, params).fetchall()
+            logger.info("Fetched %d fire rows", len(rows))
 
-        # Load weather + environmental lookups for RF feature building
-        weather_map = _build_weather_map(con)
-        env_map = _build_env_map(con)
+            weather_map = _build_weather_map(con)
+            env_map = _build_env_map(con)
 
-    except duckdb.CatalogException:
-        logger.warning("Table 'fires' does not exist yet")
-        return []
-    except Exception:
-        logger.exception("Unexpected error while reading fires")
-        raise
-    finally:
-        con.close()
+        except duckdb.CatalogException:
+            logger.warning("Table 'fires' does not exist yet")
+            return []
+        except Exception:
+            logger.exception("Unexpected error while reading fires")
+            raise
+        finally:
+            con.close()
 
-    # Compute RF risk scores for all rows in one batch
-    try:
         risk_scores = compute_risk_batch(rows, weather_map, env_map)
+
+        return [
+            {
+                "lat": r[0],
+                "lon": r[1],
+                "brightness": r[2],
+                "frp": r[4],
+                "confidence": r[5],
+                "acq_date": r[6],
+                "acq_time": r[7],
+                "risk": risk_scores[i],
+            }
+            for i, r in enumerate(rows)
+        ]
     except ModelUnavailableError as exc:
         raise HTTPException(
             status_code=503,
             detail="RF model is unavailable and fallback is disabled",
         ) from exc
-
-    return [
-        {
-            "lat": r[0],
-            "lon": r[1],
-            "brightness": r[2],
-            "frp": r[4],
-            "confidence": r[5],
-            "acq_date": r[6],
-            "acq_time": r[7],
-            "risk": risk_scores[i],
-        }
-        for i, r in enumerate(rows)
-    ]
+    finally:
+        _last_fires_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
