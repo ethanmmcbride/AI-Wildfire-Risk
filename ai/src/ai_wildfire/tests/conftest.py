@@ -6,7 +6,7 @@ import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
-from ai_wildfire import configs, data_loader, model_store
+from ai_wildfire import configs, model_store
 from ai_wildfire.features import build_feature_matrix
 from ai_wildfire.utils import set_seed
 
@@ -44,7 +44,6 @@ def seeded_golden_db(tmp_path, monkeypatch, golden_df):
     con.execute("INSERT INTO fires SELECT * FROM golden_df")
     con.close()
     monkeypatch.setattr(configs, "DB_PATH", db_path)
-    monkeypatch.setattr(data_loader, "DB_PATH", db_path)
     return db_path
 
 

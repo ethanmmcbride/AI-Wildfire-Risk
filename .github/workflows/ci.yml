@@ -382,10 +382,11 @@ jobs:
           echo "Pushed ${IMAGE}:${BUILD_SHORT}" >> $GITHUB_STEP_SUMMARY
 
       - name: Trigger Render deploy
-        if: ${{ secrets.RENDER_DEPLOY_HOOK != '' }}
         run: |
-          curl -s "${{ secrets.RENDER_DEPLOY_HOOK }}" | jq .
-          echo "Render deploy triggered" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            curl -s "${{ secrets.RENDER_DEPLOY_HOOK }}" | jq .
+            echo "Render deploy triggered" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Write deploy summary
         run: |
