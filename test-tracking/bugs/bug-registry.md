@@ -23,6 +23,7 @@ produced by CI (GitHub Actions run number + short commit SHA).
 | BUG-0003 | Confidence parameter accepts SQL injection payloads without rejection | High | Security | `002-e4f5a6b` | `TestSQLInjection::test_sql_injection_in_confidence_param` | `004-f0a1b2c` | #45 |
 | BUG-0004 | Oversized confidence param not validated — no 400 response returned | Medium | Security | `002-e4f5a6b` | `TestOversizedInput::test_oversized_confidence_param_rejected` | `004-f0a1b2c` | #45 |
 | BUG-0005 | `/health` endpoint SLA violation under repeated load on CI runners | Low | Performance | `003-c7d8e9f` | `TestHealthEndpointSLA::test_health_endpoint_consistent_across_repeated_calls` | `004-f0a1b2c` | #46 |
+| BUG-0006 | `GET /metrics` returns 404 — endpoint not yet implemented when tests pushed | High | Metrics/API | *(see CI screenshot — failing build)* | `TestMetricsEndpoint::test_metrics_endpoint_returns_200` | *(see CI — passing build after fix)* | — |
 
 ---
 
@@ -110,3 +111,51 @@ fix, not a code defect.
 **Found In Build:** `003-c7d8e9f`  
 **Fixed In Build:** `004-f0a1b2c`  
 **Test Case:** `backend/tests/performance/test_performance.py::TestHealthEndpointSLA::test_health_endpoint_consistent_across_repeated_calls`
+
+---
+
+## Bug Detail: BUG-0006
+
+**Title:** `GET /metrics` returns 404 — endpoint not implemented when TDD tests were pushed
+
+**Description:**  
+Following TDD methodology, `backend/tests/test_metrics.py` was pushed to
+`feature/metrics-cd-pipeline` before the `/metrics` endpoint existed in `server.py`. The
+CI `test-backend` job ran the 6 new metrics tests and all failed with HTTP 404 (FastAPI
+default "Not Found" response), proving the test suite correctly detects a missing route.
+This was the intentional first commit on the branch — push tests, observe CI failure,
+document the bug, then push the fix.
+
+**Root Cause:** `GET /metrics` was not yet defined in `server.py`. FastAPI returns 404 for
+any undefined route.
+
+**Fix:** Added in `backend/src/ai_wildfire_tracker/api/server.py`:
+```python
+_PROCESS_START = time.time()
+_request_counts: dict[str, int] = {"fires": 0, "health": 0, "metrics": 0}
+_last_fires_response_ms: float | None = None
+_last_health_response_ms: float | None = None
+
+@app.get("/metrics")
+def get_metrics():
+    _request_counts["metrics"] += 1
+    return {
+        "uptime_seconds": round(time.time() - _PROCESS_START, 1),
+        "request_counts": dict(_request_counts),
+        "last_fires_response_ms": _last_fires_response_ms,
+        "last_health_response_ms": _last_health_response_ms,
+    }
+```
+Also instrumented `/fires` and `/health` with `_request_counts` increments and
+`time.perf_counter()` response-time tracking.
+
+**Severity:** High (endpoint completely absent — all 6 metrics tests fail)  
+**Found In Build:** *(CI run number from failing screenshot — feature/metrics-cd-pipeline commit 1)*  
+**Fixed In Build:** *(CI run number from passing run — feature/metrics-cd-pipeline commit 2)*  
+**Test Cases (all 6 failed, all 6 fixed):**
+- `TestMetricsEndpoint::test_metrics_endpoint_returns_200`
+- `TestMetricsEndpoint::test_metrics_has_required_fields`
+- `TestMetricsEndpoint::test_request_counts_tracks_fires_and_health`
+- `TestMetricsEndpoint::test_fires_counter_increments_after_fires_request`
+- `TestMetricsEndpoint::test_last_fires_response_ms_populated_after_fires_call`
+- `TestMetricsEndpoint::test_uptime_seconds_is_non_negative_float`

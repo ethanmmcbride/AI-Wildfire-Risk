@@ -317,108 +317,106 @@ def get_fires(
     global _last_fires_response_ms
     _t0 = time.perf_counter()
     _request_counts["fires"] += 1
-    logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
-
-    valid_regions = list(REGION_BOUNDS.keys())
-    if region is not None and region.lower() not in valid_regions:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid region '{region}'. Must be one of: {', '.join(valid_regions)}",
-        )
-
-    valid_confidences = ["high", "nominal", "low"]
-    if confidence is not None and confidence.lower() not in valid_confidences:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid confidence '{confidence}'. Must be one of: high, nominal, low",
-        )
-
-    if not os.path.exists(DB_PATH):
-        logger.warning("Database file does not exist: %s", DB_PATH)
-        return []
-
-    con = duckdb.connect(DB_PATH)
     try:
-        # Fetch fire rows — now includes bright_ti5 and acq_time for RF features
-        query = """
-            SELECT
-                latitude, longitude,
-                bright_ti4, bright_ti5, frp,
-                confidence, acq_date, acq_time
-            FROM fires
-        """
-        params: list[object] = []
-        where_clauses: list[str] = [
-            "latitude BETWEEN ? AND ?",
-            "longitude BETWEEN ? AND ?",
-        ]
-        params.extend(
-            [
-                US_BOUNDS["min_lat"],
-                US_BOUNDS["max_lat"],
-                US_BOUNDS["min_lon"],
-                US_BOUNDS["max_lon"],
+        logger.info("GET /fires requested with confidence=%s region=%s", confidence, region)
+
+        valid_regions = list(REGION_BOUNDS.keys())
+        if region is not None and region.lower() not in valid_regions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid region '{region}'. Must be one of: {', '.join(valid_regions)}",
+            )
+
+        valid_confidences = ["high", "nominal", "low"]
+        if confidence is not None and confidence.lower() not in valid_confidences:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid confidence '{confidence}'. Must be one of: high, nominal, low",
+            )
+
+        if not os.path.exists(DB_PATH):
+            logger.warning("Database file does not exist: %s", DB_PATH)
+            return []
+
+        con = duckdb.connect(DB_PATH)
+        try:
+            query = """
+                SELECT
+                    latitude, longitude,
+                    bright_ti4, bright_ti5, frp,
+                    confidence, acq_date, acq_time
+                FROM fires
+            """
+            params: list[object] = []
+            where_clauses: list[str] = [
+                "latitude BETWEEN ? AND ?",
+                "longitude BETWEEN ? AND ?",
             ]
-        )
+            params.extend(
+                [
+                    US_BOUNDS["min_lat"],
+                    US_BOUNDS["max_lat"],
+                    US_BOUNDS["min_lon"],
+                    US_BOUNDS["max_lon"],
+                ]
+            )
 
-        if confidence:
-            where_clauses.append("lower(confidence) = lower(?)")
-            params.append(confidence)
+            if confidence:
+                where_clauses.append("lower(confidence) = lower(?)")
+                params.append(confidence)
 
-        if region and region.lower() != "us":
-            bounds = REGION_BOUNDS.get(region.lower())
-            if bounds:
-                where_clauses.extend(
-                    [
-                        "latitude BETWEEN ? AND ?",
-                        "longitude BETWEEN ? AND ?",
-                    ]
-                )
-                params.extend(
-                    [
-                        bounds["min_lat"],
-                        bounds["max_lat"],
-                        bounds["min_lon"],
-                        bounds["max_lon"],
-                    ]
-                )
+            if region and region.lower() != "us":
+                bounds = REGION_BOUNDS.get(region.lower())
+                if bounds:
+                    where_clauses.extend(
+                        [
+                            "latitude BETWEEN ? AND ?",
+                            "longitude BETWEEN ? AND ?",
+                        ]
+                    )
+                    params.extend(
+                        [
+                            bounds["min_lat"],
+                            bounds["max_lat"],
+                            bounds["min_lon"],
+                            bounds["max_lon"],
+                        ]
+                    )
 
-        if where_clauses:
-            query += " WHERE " + " AND ".join(where_clauses)
+            if where_clauses:
+                query += " WHERE " + " AND ".join(where_clauses)
 
-        query += " ORDER BY acq_date DESC, acq_time DESC LIMIT 1000"
+            query += " ORDER BY acq_date DESC, acq_time DESC LIMIT 1000"
 
-        rows = con.execute(query, params).fetchall()
-        logger.info("Fetched %d fire rows", len(rows))
+            rows = con.execute(query, params).fetchall()
+            logger.info("Fetched %d fire rows", len(rows))
 
-        # Load weather + environmental lookups for RF feature building
-        weather_map = _build_weather_map(con)
-        env_map = _build_env_map(con)
+            weather_map = _build_weather_map(con)
+            env_map = _build_env_map(con)
 
-    except duckdb.CatalogException:
-        logger.warning("Table 'fires' does not exist yet")
-        return []
-    except Exception:
-        logger.exception("Unexpected error while reading fires")
-        raise
+        except duckdb.CatalogException:
+            logger.warning("Table 'fires' does not exist yet")
+            return []
+        except Exception:
+            logger.exception("Unexpected error while reading fires")
+            raise
+        finally:
+            con.close()
+
+        risk_scores = compute_risk_batch(rows, weather_map, env_map)
+
+        return [
+            {
+                "lat": r[0],
+                "lon": r[1],
+                "brightness": r[2],
+                "frp": r[4],
+                "confidence": r[5],
+                "acq_date": r[6],
+                "acq_time": r[7],
+                "risk": risk_scores[i],
+            }
+            for i, r in enumerate(rows)
+        ]
     finally:
-        con.close()
-
-    # Compute RF risk scores for all rows in one batch
-    risk_scores = compute_risk_batch(rows, weather_map, env_map)
-
-    result = [
-        {
-            "lat": r[0],
-            "lon": r[1],
-            "brightness": r[2],
-            "frp": r[4],
-            "confidence": r[5],
-            "acq_date": r[6],
-            "acq_time": r[7],
-            "risk": risk_scores[i],
-        }
-        for i, r in enumerate(rows)
-    ]
-    _last_fires_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
-    return result
+        _last_fires_response_ms = round((time.perf_counter() - _t0) * 1000, 2)
