@@ -90,6 +90,8 @@ def ensure_fires_table(con: duckdb.DuckDBPyConnection) -> None:
 def _count_existing(con: duckdb.DuckDBPyConnection, date: str) -> int:
     try:
         result = con.execute("SELECT COUNT(*) FROM fires WHERE acq_date = ?", [date]).fetchone()
+        if result is None:
+            return 0
         return result[0] or 0
     except duckdb.CatalogException:
         return 0
@@ -161,7 +163,7 @@ def fetch_firms_window(
         source,
         start_date or "latest",
     )
-    return df
+    return pd.DataFrame(df)
 
 
 # ---------------------------------------------------------------------------

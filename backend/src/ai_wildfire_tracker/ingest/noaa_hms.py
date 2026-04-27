@@ -106,7 +106,7 @@ def _normalize_noaa_hms(df: pd.DataFrame) -> pd.DataFrame:
         {"NaT": datetime.now(timezone.utc).strftime("%Y-%m-%d")}
     )
     normalized["acq_time"] = normalized["acq_time"].replace({"nan": "0000", "None": "0000"})
-    return normalized
+    return pd.DataFrame(normalized)
 
 
 def ingest_noaa_hms() -> None:

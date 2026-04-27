@@ -50,7 +50,7 @@ def test_high_confidence_detections_score_above_threshold():
     con.close()
 
     try:
-        with patch("ai_wildfire.data_loader.DB_PATH", db_path):
+        with patch("ai_wildfire.configs.DB_PATH", db_path):
             result = predict_from_db(limit=10)
         high_conf = result[result["confidence"] == "h"]
         assert len(high_conf) > 0
